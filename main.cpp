@@ -3,6 +3,7 @@
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 HWND g_hwnd = NULL;
+COLORREF **colorsbuff = nullptr;
 
 void UpdateWindowBuffer(COLORREF **colors) {
   if (!g_hwnd)
@@ -65,13 +66,29 @@ void InitializeWindow(HINSTANCE hInstance) {
   ShowWindow(g_hwnd, SW_SHOW);
 }
 
+//主循环 逻辑放这里
+void Tick(){
+    //todo 执行渲染逻辑
+
+    // 更新窗口显示
+    UpdateWindowBuffer(colorsbuff);
+}
+
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                    LPSTR lpCmdLine, int nCmdShow) {
+    //初始化buff
+    colorsbuff = new COLORREF *[WINDOW_HEIGHT];
+    for (int y = 0; y < WINDOW_HEIGHT; ++y) {
+      colorsbuff[y] = new COLORREF[WINDOW_WIDTH];
+    }
+
   InitializeWindow(hInstance);
 
   // Main message loop
   MSG msg = {};
   int i = 155;
+  //Tick 循环
   while (true) {
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
       if (msg.message == WM_QUIT)
@@ -81,23 +98,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     }
     if (msg.message == WM_QUIT)
       break;
-    // 创建颜色数组
-    COLORREF **colors = new COLORREF *[WINDOW_HEIGHT];
+
+    //创建颜色
     for (int y = 0; y < WINDOW_HEIGHT; ++y) {
-      colors[y] = new COLORREF[WINDOW_WIDTH];
       for (int x = 0; x < WINDOW_WIDTH; ++x) {
-        colors[y][x] = RGB(i % 256, i % 256, i % 256); // 生成颜色
+        colorsbuff[y][x] = RGB(i+x % 256, i*2+y % 256, i*3+x+y % 256); // 生成颜色
       }
     }
+    
     i++;
-    // 更新窗口显示
-    UpdateWindowBuffer(colors);
 
-    // 清理颜色数组
-    for (int y = 0; y < WINDOW_HEIGHT; ++y) {
-      delete[] colors[y];
-    }
-    delete[] colors;
+    Tick();
   }
   return 0;
 }
