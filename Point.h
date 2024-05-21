@@ -12,10 +12,12 @@ public:
     int x, y;
     Color color;
 
-    Point(int x = 0, int y = 0, Color color = Color()) : x(x), y(y), color(color) {}
-    Point(int x = 0, int y = 0, int red = 0, int green = 0, int blue = 0, int alpha = 255)
+    Point(int x, int y, Color color) : x(x), y(y), color(color) {}
+
+    Point(int x, int y, int red, int green, int blue, int alpha)
             : x(x), y(y), color(Color(red, green, blue, alpha)) {}
 
+    Point(int x, int y) : Point(x, y, Color()) {}
     static Point Interpolate(const Point& a, const Point& b, float t) {
         int newX = a.x + static_cast<int>(t * (b.x - a.x));
         int newY = a.y + static_cast<int>(t * (b.y - a.y));
