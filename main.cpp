@@ -1,9 +1,11 @@
+#include "main.h"
 #include <windows.h>
+#include "Rasterizer.h"
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
-HWND g_hwnd = NULL;
 COLORREF **colorsbuff = nullptr;
+HWND g_hwnd = NULL;
 
 void UpdateWindowBuffer(COLORREF **colors) {
   if (!g_hwnd)
@@ -69,7 +71,7 @@ void InitializeWindow(HINSTANCE hInstance) {
 //主循环 逻辑放这里
 void Tick(){
     //todo 执行渲染逻辑
-
+    Rasterizer::DrawLine(Point(0,0,Color(2,3,3)),Point(55,55,Color(233,233,233)));
     // 更新窗口显示
     UpdateWindowBuffer(colorsbuff);
 }
@@ -100,13 +102,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       break;
 
     //创建颜色
-    for (int y = 0; y < WINDOW_HEIGHT; ++y) {
-      for (int x = 0; x < WINDOW_WIDTH; ++x) {
-        colorsbuff[y][x] = RGB(i+x % 256, i*2+y % 256, i*3+x+y % 256); // 生成颜色
-      }
-    }
+    // for (int y = 0; y < WINDOW_HEIGHT; ++y) {
+    //   for (int x = 0; x < WINDOW_WIDTH; ++x) {
+    //     colorsbuff[y][x] = RGB(i+x % 256, i*2+y % 256, i*3+x+y % 256); // 生成颜色
+    //   }
+    // }
     
-    i++;
+    // i++;
 
     Tick();
   }
