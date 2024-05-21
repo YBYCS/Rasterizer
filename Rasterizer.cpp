@@ -20,6 +20,12 @@ void Rasterizer::DrawLine(Point p1, Point p2) {
         colorsbuff[currentPoint.x][currentPoint.y] = currentPoint.color.ToRGB(); 
     }
 }
+void Rasterizer::DrawTriangleEdge(Point p1, Point p2, Point p3) {
+    // 画三角形的三条边
+    DrawLine(p1, p2);
+    DrawLine(p2, p3);
+    DrawLine(p3, p1);
+}
 void Rasterizer::DrawTriangle(Point p1, Point p2, Point p3) {
     //根据y值来排布
     if (p1.y > p2.y) std::swap(p1, p2);

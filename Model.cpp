@@ -2,11 +2,11 @@
 // Created by azuslai on 21/5/2024.
 //
 
-#include "OBJModel.h"
+#include "Model.h"
 #include "fstream"
 #include "iostream"
 #include "sstream"
-bool OBJModel::loadOBJ(const std::string &filename, OBJModel &model)
+bool Model::loadOBJ(const std::string &filename, Model &model)
 {
     std::ifstream file(filename);
     if (!file.is_open()) {

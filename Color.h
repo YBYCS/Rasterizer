@@ -14,13 +14,7 @@ public:
     Color(int r = 255, int g = 255, int b = 255,int a=255) : r(r), g(g), b(b) ,a(a){}
 
     // 线性插值
-    static Color Lerp(const Color &start, const Color &end, float t) {
-        return Color(
-                start.r + static_cast<int>(t * (end.r - start.r)),
-                start.g + static_cast<int>(t * (end.g - start.g)),
-                start.b + static_cast<int>(t * (end.b - start.b))
-        );
-    }
+    static Color Lerp(const Color &start, const Color &end, float t);
 
     unsigned long ToRGB() const ;
 };
