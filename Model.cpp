@@ -6,7 +6,7 @@
 #include "fstream"
 #include "iostream"
 #include "sstream"
-bool Model::loadOBJ(const std::string &filename, Model &model)
+bool Model::LoadOBJ(const std::string &filename, Model &model)
 {
     std::ifstream file(filename);
     if (!file.is_open()) {

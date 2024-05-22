@@ -2,6 +2,7 @@
 #include "main.h"
 #include "Point.h"
 #include <math.h>
+#include "WindowController.h"
 
 Rasterizer::Rasterizer()
 {
@@ -17,7 +18,7 @@ void Rasterizer::DrawLine(Point p1, Point p2) {
     float steps = std::max(dx, abs(dy));
     for (float t = 0; t <= 1; t += 1.0f / steps) {
         Point currentPoint = Point::Interpolate(p1, p2, t);
-        colorsbuff[currentPoint.x][currentPoint.y] = currentPoint.color.ToRGB(); 
+        window->SetColorsbuff(currentPoint.x, currentPoint.y, currentPoint.color.ToRGB());
     }
 }
 void Rasterizer::DrawTriangleEdge(Point p1, Point p2, Point p3) {
@@ -63,7 +64,7 @@ void Rasterizer::DrawTriangle(Point p1, Point p2, Point p3) {
         for (int x = x1; x <= x2; ++x) {
             if (x < 0 || x >= WINDOW_WIDTH) continue;
             Color interpolatedColor = colorInterpolate(x, y, p1, p2, p3);
-            colorsbuff[x][y] = interpolatedColor.ToRGB();
+            window->SetColorsbuff(x, y, interpolatedColor.ToRGB());
         }
     }
 }
