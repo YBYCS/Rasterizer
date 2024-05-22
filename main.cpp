@@ -82,9 +82,12 @@ void Start() {
     if (Model::loadOBJ("obj/boggie/body.obj", model)) {
         // 成功加载模型
 
-        for (int i = 0; i < model.vertices.size(); ++i) {
-//                Rasterizer::DrawTriangleEdge(Point())
-            std::cout << model.vertices[i].x << std::endl;
+        for (int i = 0; i < model.faces.size(); ++i) {
+            auto face = model.faces[i];
+            auto p1 = Rasterizer::project(model.vertices[face.vertexIndices[0]]);
+            auto p2 = Rasterizer::project(model.vertices[face.vertexIndices[1]]);
+            auto p3 = Rasterizer::project(model.vertices[face.vertexIndices[2]]);
+            Rasterizer::DrawTriangleEdge(p1,p2,p3);
         }
         
 

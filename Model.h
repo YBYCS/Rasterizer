@@ -6,13 +6,7 @@
 #define RASTERIZER_MODEL_H
 #include <vector>
 #include "string"
-struct Vec3 {
-    float x, y, z;
-};
-
-struct Vec2 {
-    float u, v;
-};
+#include "General.h"
 
 struct Face {
     std::vector<int> vertexIndices;

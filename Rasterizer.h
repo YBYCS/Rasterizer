@@ -2,6 +2,7 @@
 
 
 #include "Point.h"
+#include "General.h"
 
 class Rasterizer
 {
@@ -16,5 +17,12 @@ public:
 
     static void DrawTriangle(Point p1, Point p2, Point p3);
     static void DrawTriangleEdge(Point p1, Point p2, Point p3);
+    //普通的正交投影
+    static Vec2 project(const Vec3 &vertex) {
+        
+        float screenX = (vertex.x + 1.0f) * 0.5f * 800; 
+        float screenY = (vertex.y + 1.0f) * 0.5f * 600;
+        return Vec2{screenX, screenY};
+    }
 };
 

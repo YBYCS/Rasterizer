@@ -6,12 +6,12 @@
 #define RASTERIZER_POINT_H
 
 #include "Color.h"
-
+#include "General.h"
 class Point {
 public:
     int x, y;
     Color color;
-
+    Point(Vec2 vec2):Point(vec2.u,vec2.v){}
     Point(int x, int y, Color color) : x(x), y(y), color(color) {}
 
     Point(int x, int y, int red, int green, int blue, int alpha)
