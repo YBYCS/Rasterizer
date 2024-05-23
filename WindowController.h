@@ -36,5 +36,9 @@ private:
     HWND hwnd_; //窗口实例句柄
     int width_ = 800;
     int height_ = 600;
-    COLORREF **colorsbuff_ = nullptr;
+    COLORREF **colorsbuff_ = nullptr;   //前台缓冲区
+    HDC hdc_;                           //前台缓冲区内存设备上下文句柄
+    COLORREF *flatArray_ = nullptr;     //后台缓冲区
+    HDC memDC_;                         //后台缓冲区内存设备上下文句柄
+    HBITMAP hBitmap_;                   //位图
 };

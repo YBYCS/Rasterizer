@@ -10,19 +10,36 @@ WindowController* WindowController::getInstance() {
 }
 
 WindowController::WindowController() {}
-WindowController::~WindowController() {}
+WindowController::~WindowController() {
+    DeleteObject(hBitmap_);
+    DeleteDC(memDC_);
+    ReleaseDC(hwnd_, hdc_);
+    for (int y = 0; y < height_; ++y) {
+        delete[] colorsbuff_[y];
+    }
+    delete[] colorsbuff_;
+    delete[] flatArray_;
+}
 
 void WindowController::InitializeWindow(HINSTANCE hInstance, const uint32_t& width, const uint32_t& height) {
     width_ = width;
     height_ = height;
+
+    RegisterWindowClass(hInstance);
+    CreateAWindow(hInstance);
 
     //初始化buff
     colorsbuff_ = new COLORREF *[height_];
     for (int y = 0; y < height_; ++y) {
         colorsbuff_[y] = new COLORREF[width_];
     }
-    RegisterWindowClass(hInstance);
-    CreateAWindow(hInstance);
+    // 初始化 flatArray_
+    flatArray_ = new COLORREF[width_ * height_];
+    // 初始化 HDC 和 HBITMAP
+    hdc_ = GetDC(hwnd_);
+    memDC_ = CreateCompatibleDC(hdc_);
+    hBitmap_ = CreateCompatibleBitmap(hdc_, width_, height_);
+    SelectObject(memDC_, hBitmap_);
 }
 
 ATOM WindowController::RegisterWindowClass(HINSTANCE hInstance) {
@@ -103,11 +120,13 @@ void WindowController::HandleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
 void WindowController::UpdateWindowBuffer() {
     if (!hwnd_)
         return;
-    HDC hdc = GetDC(hwnd_);
-    HDC memDC = CreateCompatibleDC(hdc);
-    HBITMAP hBitmap = CreateCompatibleBitmap(hdc, width_, height_);
-    SelectObject(memDC, hBitmap);
+    for (int y = 0; y < height_; ++y) {
+        for (int x = 0; x < width_; ++x) {
+            flatArray_[(height_ - y - 1) * width_ + x] = colorsbuff_[y][x];
+        }
+    }
 
+    // 设置位图信息
     BITMAPINFO bmi;
     ZeroMemory(&bmi, sizeof(bmi));
     bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -117,20 +136,10 @@ void WindowController::UpdateWindowBuffer() {
     bmi.bmiHeader.biBitCount = 32;
     bmi.bmiHeader.biCompression = BI_RGB;
 
-    COLORREF *flatArray = new COLORREF[width_ * height_];
-    for (int y = 0; y < height_; ++y) {
-        for (int x = 0; x < width_; ++x) {
-            flatArray[(height_ - y - 1) * width_ + x] = colorsbuff_[y][x];
-        }
-    }
-
-    SetDIBits(memDC, hBitmap, 0, height_, flatArray, &bmi, DIB_RGB_COLORS);
-    BitBlt(hdc, 0, 0, width_, height_, memDC, 0, 0, SRCCOPY);
-
-    delete[] flatArray;
-    DeleteObject(hBitmap);
-    DeleteDC(memDC);
-    ReleaseDC(hwnd_, hdc);
+    // 将 flatArray_ 内容复制到位图
+    SetDIBits(memDC_, hBitmap_, 0, height_, flatArray_, &bmi, DIB_RGB_COLORS);
+    // 将内存设备上下文的内容复制到窗口设备上下文
+    BitBlt(hdc_, 0, 0, width_, height_, memDC_, 0, 0, SRCCOPY);
 }
 
 void WindowController::SetColorsbuff(int x, int y, unsigned long color) {
