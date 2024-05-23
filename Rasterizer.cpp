@@ -47,9 +47,9 @@ void Rasterizer::DrawTriangle(Point p1, Point p2, Point p3) {
         float beta = area2 / totalArea;
         float gamma = area3 / totalArea;
 
-        int r = alpha * p1.color.r + beta * p2.color.r + gamma * p3.color.r;
-        int g = alpha * p1.color.g + beta * p2.color.g + gamma * p3.color.g;
-        int b = alpha * p1.color.b + beta * p2.color.b + gamma * p3.color.b;
+        byte r = alpha * p1.color.r + beta * p2.color.r + gamma * p3.color.r;
+        byte g = alpha * p1.color.g + beta * p2.color.g + gamma * p3.color.g;
+        byte b = alpha * p1.color.b + beta * p2.color.b + gamma * p3.color.b;
         
         return Color(r, g, b);
     };

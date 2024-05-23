@@ -24,7 +24,7 @@ void Start() {
     } else {
         std::cout << "打开文件失败" << std::endl;
     }
-
+    
     window->UpdateWindowBuffer();
 }
 
@@ -33,6 +33,12 @@ void Tick() {
     //todo 执行渲染逻辑
     //Rasterizer::DrawLine(Point(0, 0, Color(2, 3, 3)), Point(55, 55, Color(233, 233, 233)));
     // 更新窗口显示
+    for (int i = 0; i < WINDOW_WIDTH; i++) {
+        for (int j = 0; j < WINDOW_HEIGHT; j++) {
+            int v = std::rand() % 255;
+            window->SetColorsbuff(j, i, RGB(v,v,v));
+        }
+    }
     window->UpdateWindowBuffer();
 }
 

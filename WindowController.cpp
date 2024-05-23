@@ -32,6 +32,9 @@ void WindowController::InitializeWindow(HINSTANCE hInstance, const uint32_t& wid
     colorsbuff_ = new COLORREF *[height_];
     for (int y = 0; y < height_; ++y) {
         colorsbuff_[y] = new COLORREF[width_];
+        for (int x = 0; x < width_; ++x) {
+            colorsbuff_[y][x] = 0;
+        }
     }
     // 初始化 flatArray_
     flatArray_ = new COLORREF[width_ * height_];
@@ -130,8 +133,6 @@ void WindowController::HandleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
 void WindowController::UpdateWindowBuffer() {
     if (!hwnd_)
         return;
-    //首先清除掉上一帧遗留下来的内容，再绘制这一帧的内容。
-    PatBlt(hdc_, 0, 0, width_, height_, BLACKNESS);
 
     for (int y = 0; y < height_; ++y) {
         for (int x = 0; x < width_; ++x) {

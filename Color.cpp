@@ -9,9 +9,9 @@
 Color Color::Lerp(const Color &start, const Color &end, float t)
 {
     return Color(
-                start.r + static_cast<int>(t * (end.r - start.r)),
-                start.g + static_cast<int>(t * (end.g - start.g)),
-                start.b + static_cast<int>(t * (end.b - start.b))
+                start.r + static_cast<byte>(t * (end.r - start.r)),
+                start.g + static_cast<byte>(t * (end.g - start.g)),
+                start.b + static_cast<byte>(t * (end.b - start.b))
         );
 }
 

@@ -14,7 +14,7 @@ public:
     Point(Vec2 vec2):Point(vec2.u,vec2.v){}
     Point(int x, int y, Color color) : x(x), y(y), color(color) {}
 
-    Point(int x, int y, int red, int green, int blue, int alpha)
+    Point(int x, int y, byte red, byte green, byte blue, byte alpha)
             : x(x), y(y), color(Color(red, green, blue, alpha)) {}
 
     Point(int x, int y) : Point(x, y, Color()) {}
