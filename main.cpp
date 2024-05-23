@@ -4,8 +4,6 @@
 #include "Model.h"
 
 #pragma comment(linker, "/subsystem:window /entry:WinMainCRTStartup")
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 600;
 
 void Start() {
 //    Rasterizer::DrawTriangle(Point(0,0,0,0,0,255),Point(0,200,200,200,200,255),Point(200,200,0,0,222,255));
@@ -29,8 +27,8 @@ void Start() {
 
 //屏幕雪花噪点效果
 void SnowflakeNoise() {
-    for (int i = 0; i < WINDOW_WIDTH; i++) {
-        for (int j = 0; j < WINDOW_HEIGHT; j++) {
+    for (int i = 0; i < window->GetWidth(); i++) {
+        for (int j = 0; j < window->GetHeight(); j++) {
             int v = std::rand() % 255;
             window->SetColorsbuff(j, i, RGB(v,v,v));
         }
@@ -95,7 +93,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 //    RedirectIOToConsole();
     std::cout << "hello world" << std::endl;
-    window->InitializeWindow(hInstance, WINDOW_WIDTH, WINDOW_HEIGHT);
+    window->InitializeWindow(hInstance);
     Start();
 
     // Main message loop

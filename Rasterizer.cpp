@@ -55,14 +55,14 @@ void Rasterizer::DrawTriangle(Point p1, Point p2, Point p3) {
     };
 
     for (int y = p1.y; y <= p3.y; ++y) {
-        if (y < 0 || y >= WINDOW_HEIGHT) continue;
+        if (y < 0 || y >= window->GetHeight()) continue;
 
         int x1 = (y < p2.y) ? interpolate(y, p1, p2) : interpolate(y, p2, p3);
         int x2 = interpolate(y, p1, p3);
         if (x1 > x2) std::swap(x1, x2);
 
         for (int x = x1; x <= x2; ++x) {
-            if (x < 0 || x >= WINDOW_WIDTH) continue;
+            if (x < 0 || x >= window->GetWidth()) continue;
             Color interpolatedColor = colorInterpolate(x, y, p1, p2, p3);
             window->SetColorsbuff(x, y, interpolatedColor.ToRGB());
         }

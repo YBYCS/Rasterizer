@@ -20,9 +20,8 @@ public:
     //普通的正交投影
     static Vec2 project(const Vec3 &vertex) {
         
-        float screenX = (vertex.x + 1.0f) * 0.5f * WINDOW_WIDTH; 
-        float screenY = (vertex.y + 1.0f) * 0.5f * WINDOW_HEIGHT;
+        float screenX = (vertex.x + 1.0f) * 0.5f * window->GetWidth(); 
+        float screenY = (vertex.y + 1.0f) * 0.5f * window->GetHeight();
         return Vec2{screenX, screenY};
     }
 };
-

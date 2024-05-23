@@ -1,4 +1,5 @@
 #include "WindowController.h"
+#include "main.h"
 #include <iostream>
 
 WindowController* WindowController::instance_ = nullptr;
@@ -21,10 +22,7 @@ WindowController::~WindowController() {
     delete[] flatArray_;
 }
 
-void WindowController::InitializeWindow(HINSTANCE hInstance, const uint32_t& width, const uint32_t& height) {
-    width_ = width;
-    height_ = height;
-    
+void WindowController::InitializeWindow(HINSTANCE hInstance) {
     RegisterWindowClass(hInstance);
     CreateAWindow(hInstance);
 
@@ -119,7 +117,7 @@ void WindowController::HandleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
             {
                 PAINTSTRUCT ps;
                 HDC hdc = BeginPaint(hwnd, &ps);
-                UpdateWindowBuffer();
+                Tick();
                 EndPaint(hwnd, &ps);
             }
             break;

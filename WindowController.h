@@ -13,7 +13,7 @@ public:
     WindowController();
     ~WindowController();
 
-    void InitializeWindow(HINSTANCE hInstance, const uint32_t& width, const uint32_t& height);
+    void InitializeWindow(HINSTANCE hInstance);
 
     // 处理窗口事件
     void HandleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -26,6 +26,9 @@ public:
     void SetColorsbuff(int x, int y, unsigned long color);
 
     void Clear();
+
+    int GetWidth() { return width_; };
+    int GetHeight() { return height_; };
 private:
     void CreateAWindow(HINSTANCE hInstance);
     ATOM RegisterWindowClass(HINSTANCE hInstance);
@@ -36,8 +39,8 @@ private:
     HINSTANCE hInstance_;   //窗口所属的应用程序实例句柄
     WCHAR windowClassName_[100] = L"Sample Window Class";   //窗口类的名称，通过名称来唯一表示窗口类
     HWND hwnd_; //窗口实例句柄
-    int width_;
-    int height_;
+    int width_ = 800;
+    int height_ = 600;
     COLORREF **colorsbuff_ = nullptr;   //用二维数组存储颜色
     HDC hdc_;                           //前台缓冲区内存设备上下文句柄
     COLORREF *flatArray_ = nullptr;     //用于与GDI函数交互，按一维数组存储颜色
