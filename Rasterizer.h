@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include "main.h"
 #include "Point.h"
 #include "General.h"
 
@@ -20,8 +20,8 @@ public:
     //普通的正交投影
     static Vec2 project(const Vec3 &vertex) {
         
-        float screenX = (vertex.x + 1.0f) * 0.5f * 800; 
-        float screenY = (vertex.y + 1.0f) * 0.5f * 600;
+        float screenX = (vertex.x + 1.0f) * 0.5f * WINDOW_WIDTH; 
+        float screenY = (vertex.y + 1.0f) * 0.5f * WINDOW_HEIGHT;
         return Vec2{screenX, screenY};
     }
 };

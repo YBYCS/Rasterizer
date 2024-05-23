@@ -1,5 +1,5 @@
 #include "WindowController.h"
-#include<iostream>
+#include <iostream>
 
 WindowController* WindowController::instance_ = nullptr;
 WindowController* WindowController::getInstance() {
@@ -24,7 +24,7 @@ WindowController::~WindowController() {
 void WindowController::InitializeWindow(HINSTANCE hInstance, const uint32_t& width, const uint32_t& height) {
     width_ = width;
     height_ = height;
-
+    
     RegisterWindowClass(hInstance);
     CreateAWindow(hInstance);
 
@@ -35,6 +35,16 @@ void WindowController::InitializeWindow(HINSTANCE hInstance, const uint32_t& wid
     }
     // 初始化 flatArray_
     flatArray_ = new COLORREF[width_ * height_];
+
+    // 设置位图信息
+    ZeroMemory(&bmi_, sizeof(bmi_));
+    bmi_.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi_.bmiHeader.biWidth = width_;
+    bmi_.bmiHeader.biHeight = -height_; // top-down when negative
+    bmi_.bmiHeader.biPlanes = 1;
+    bmi_.bmiHeader.biBitCount = 32;
+    bmi_.bmiHeader.biCompression = BI_RGB;
+
     // 初始化 HDC 和 HBITMAP
     hdc_ = GetDC(hwnd_);
     memDC_ = CreateCompatibleDC(hdc_);
@@ -102,7 +112,7 @@ void WindowController::HandleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
         case WM_CLOSE:
             DestroyWindow(hwnd);    //此处销毁窗体会自动发出WM_DESTROY
             break;
-        case WM_PAINT:              //当窗体尺寸发生变化时，需要重绘
+        case WM_PAINT:              //窗口需要重绘时
             {
                 PAINTSTRUCT ps;
                 HDC hdc = BeginPaint(hwnd, &ps);
@@ -120,24 +130,17 @@ void WindowController::HandleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
 void WindowController::UpdateWindowBuffer() {
     if (!hwnd_)
         return;
+    //首先清除掉上一帧遗留下来的内容，再绘制这一帧的内容。
+    PatBlt(hdc_, 0, 0, width_, height_, BLACKNESS);
+
     for (int y = 0; y < height_; ++y) {
         for (int x = 0; x < width_; ++x) {
             flatArray_[(height_ - y - 1) * width_ + x] = colorsbuff_[y][x];
         }
     }
 
-    // 设置位图信息
-    BITMAPINFO bmi;
-    ZeroMemory(&bmi, sizeof(bmi));
-    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth = width_;
-    bmi.bmiHeader.biHeight = -height_; // top-down when negative
-    bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount = 32;
-    bmi.bmiHeader.biCompression = BI_RGB;
-
     // 将 flatArray_ 内容复制到位图
-    SetDIBits(memDC_, hBitmap_, 0, height_, flatArray_, &bmi, DIB_RGB_COLORS);
+    SetDIBits(memDC_, hBitmap_, 0, height_, flatArray_, &bmi_, DIB_RGB_COLORS);
     // 将内存设备上下文的内容复制到窗口设备上下文
     BitBlt(hdc_, 0, 0, width_, height_, memDC_, 0, 0, SRCCOPY);
 }

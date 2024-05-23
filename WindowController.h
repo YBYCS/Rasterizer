@@ -13,7 +13,7 @@ public:
     WindowController();
     ~WindowController();
 
-    void InitializeWindow(HINSTANCE hInstance, const uint32_t& width = 800, const uint32_t& height = 600);
+    void InitializeWindow(HINSTANCE hInstance, const uint32_t& width, const uint32_t& height);
 
     // 处理窗口事件
     void HandleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -34,11 +34,12 @@ private:
     HINSTANCE hInstance_;   //窗口所属的应用程序实例句柄
     WCHAR windowClassName_[100] = L"Sample Window Class";   //窗口类的名称，通过名称来唯一表示窗口类
     HWND hwnd_; //窗口实例句柄
-    int width_ = 800;
-    int height_ = 600;
-    COLORREF **colorsbuff_ = nullptr;   //前台缓冲区
+    int width_;
+    int height_;
+    COLORREF **colorsbuff_ = nullptr;   //用二维数组存储颜色
     HDC hdc_;                           //前台缓冲区内存设备上下文句柄
-    COLORREF *flatArray_ = nullptr;     //后台缓冲区
+    COLORREF *flatArray_ = nullptr;     //用于与GDI函数交互，按一维数组存储颜色
     HDC memDC_;                         //后台缓冲区内存设备上下文句柄
     HBITMAP hBitmap_;                   //位图
+    BITMAPINFO bmi_;                    //位图格式
 };
