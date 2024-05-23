@@ -24,6 +24,8 @@ public:
     void UpdateWindowBuffer();
 
     void SetColorsbuff(int x, int y, unsigned long color);
+
+    void Clear();
 private:
     void CreateAWindow(HINSTANCE hInstance);
     ATOM RegisterWindowClass(HINSTANCE hInstance);

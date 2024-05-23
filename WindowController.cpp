@@ -149,3 +149,11 @@ void WindowController::UpdateWindowBuffer() {
 void WindowController::SetColorsbuff(int x, int y, unsigned long color) {
     colorsbuff_[x][y] = color;
 }
+
+void WindowController::Clear() {
+    for (int i = 0; i < height_; i++) {
+        for (int j = 0; j < width_; j++) {
+            colorsbuff_[i][j] = 0;
+        }
+    }
+}

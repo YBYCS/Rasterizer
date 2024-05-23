@@ -9,38 +9,49 @@ const int WINDOW_HEIGHT = 600;
 
 void Start() {
 //    Rasterizer::DrawTriangle(Point(0,0,0,0,0,255),Point(0,200,200,200,200,255),Point(200,200,0,0,222,255));
-    Model model;
-    if (Model::LoadOBJ("obj/boggie/body.obj", model)) {
-        // 成功加载模型
+    // Model model;
+    // if (Model::LoadOBJ("obj/boggie/body.obj", model)) {
+    //     // 成功加载模型
 
-        for (int i = 0; i < model.faces.size(); ++i) {
-            auto face = model.faces[i];
-            auto p1 = Rasterizer::project(model.vertices[face.vertexIndices[0]]);
-            auto p2 = Rasterizer::project(model.vertices[face.vertexIndices[1]]);
-            auto p3 = Rasterizer::project(model.vertices[face.vertexIndices[2]]);
-            Rasterizer::DrawTriangleEdge(p1,p2,p3);
-        }
+    //     for (int i = 0; i < model.faces.size(); ++i) {
+    //         auto face = model.faces[i];
+    //         auto p1 = Rasterizer::project(model.vertices[face.vertexIndices[0]]);
+    //         auto p2 = Rasterizer::project(model.vertices[face.vertexIndices[1]]);
+    //         auto p3 = Rasterizer::project(model.vertices[face.vertexIndices[2]]);
+    //         Rasterizer::DrawTriangleEdge(p1,p2,p3);
+    //     }
 
-    } else {
-        std::cout << "打开文件失败" << std::endl;
-    }
-    
+    // } else {
+    //     std::cout << "打开文件失败" << std::endl;
+    // }
     window->UpdateWindowBuffer();
 }
 
-//主循环 逻辑放这里
-void Tick() {
-    //todo 执行渲染逻辑
-    //Rasterizer::DrawLine(Point(0, 0, Color(2, 3, 3)), Point(55, 55, Color(233, 233, 233)));
-    // 更新窗口显示
+//屏幕雪花噪点效果
+void SnowflakeNoise() {
     for (int i = 0; i < WINDOW_WIDTH; i++) {
         for (int j = 0; j < WINDOW_HEIGHT; j++) {
             int v = std::rand() % 255;
             window->SetColorsbuff(j, i, RGB(v,v,v));
         }
     }
+}
+
+//主循环 逻辑放这里
+void Tick() {
+    //首先应该将上一帧绘制内容清空
+    window->Clear();
+
+    //todo 执行渲染逻辑
+    //Rasterizer::DrawLine(Point(0, 0, Color(2, 3, 3)), Point(55, 55, Color(233, 233, 233)));
+
+    SnowflakeNoise();
+
+    // 更新窗口显示
     window->UpdateWindowBuffer();
 }
+
+
 
 // 显示一个打印窗口
 void RedirectIOToConsole() {
