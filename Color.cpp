@@ -9,10 +9,11 @@
 Color Color::Lerp(const Color &start, const Color &end, float t)
 {
     return Color(
-                start.r + static_cast<byte>(t * (end.r - start.r)),
-                start.g + static_cast<byte>(t * (end.g - start.g)),
-                start.b + static_cast<byte>(t * (end.b - start.b))
-        );
+            static_cast<byte>(static_cast<float>(end.r) * t + (1 - t) * static_cast<float>(start.r)),
+            static_cast<byte>(static_cast<float>(end.g) * t + (1 - t) * static_cast<float>(start.g)),
+            static_cast<byte>(static_cast<float>(end.b) * t + (1 - t) * static_cast<float>(start.b)),
+            static_cast<byte>(static_cast<float>(end.a) * t + (1 - t) * static_cast<float>(start.a))
+    );
 }
 
 unsigned long Color::ToRGB() const
