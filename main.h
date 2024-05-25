@@ -6,3 +6,5 @@
 
 // 函数声明
 void Tick();
+void SnowflakeNoise();
+void DrawLineEffect();

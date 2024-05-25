@@ -18,12 +18,12 @@ public:
             : x(x), y(y), color(Color(red, green, blue, alpha)) {}
 
     Point(int x, int y) : Point(x, y, Color()) {}
-    static Point Interpolate(const Point& a, const Point& b, float t) {
-        int newX = a.x + static_cast<int>(t * (b.x - a.x));
-        int newY = a.y + static_cast<int>(t * (b.y - a.y));
-        Color newColor = Color::Lerp(a.color, b.color, t);
-        return Point(newX, newY, newColor);
-    }
+    // static Point Interpolate(const Point& a, const Point& b, float t) {
+    //     int newX = a.x + static_cast<int>(t * (b.x - a.x));
+    //     int newY = a.y + static_cast<int>(t * (b.y - a.y));
+    //     Color newColor = Color::Lerp(a.color, b.color, t);
+    //     return Point(newX, newY, newColor);
+    // }
 };
 
 

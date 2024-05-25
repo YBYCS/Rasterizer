@@ -12,16 +12,49 @@ Rasterizer::~Rasterizer()
 {
 }
 
-void Rasterizer::DrawLine(Point p1, Point p2) {
-    int dx = abs(p2.x - p1.x), sx = p1.x < p2.x ? 1 : -1;
-    int dy = -abs(p2.y - p1.y), sy = p1.y < p2.y ? 1 : -1;
-    float steps = std::max(dx, abs(dy));
-    for (float t = 0; t <= 1; t += 1.0f / steps) {
-        Point currentPoint = Point::Interpolate(p1, p2, t);
-        window->SetColorsbuff(currentPoint.x, currentPoint.y, currentPoint.color.ToRGB());
+void Rasterizer::DrawLine(const Point& p1, const Point& p2) {
+    int dx = abs(p2.x - p1.x);   //计算x方向的增量（绝对值）
+    int dy = abs(p2.y - p1.y);   //计算y方向的增量（绝对值）
+    int sx = (p1.x < p2.x) ? 1 : -1; //确定x方向的步长（正向或反向）
+    int sy = (p1.y < p2.y) ? 1 : -1; //确定y方向的步长（正向或反向）
+    
+    //颜色插值权重
+    float weight = 1.0f;
+
+    // 检查 dx 和 dy 是否为零
+    if (dx == 0) {
+        // 垂直线
+        for (int y = std::min(p1.y, p2.y); y <= std::max(p1.y, p2.y); ++y) {
+            Point currentPoint(p1.x, y);
+            weight = (float)(currentPoint.y - p1.y) / (float)(p2.y - p1.y);
+            window->SetColorsbuff(currentPoint.x, currentPoint.y, Color::Lerp(p1.color, p2.color, weight).ToRGB());
+        }
+    } else if (dy == 0) {
+        // 水平线
+        for (int x = std::min(p1.x, p2.x); x <= std::max(p1.x, p2.x); ++x) {
+            Point currentPoint(x, p1.y);
+            weight = (float)(currentPoint.x - p1.x) / (float)(p2.x - p1.x);
+            window->SetColorsbuff(currentPoint.x, currentPoint.y, Color::Lerp(p1.color, p2.color, weight).ToRGB());
+        }
+    } else {
+        int err = dx - dy;
+
+        Point currentPoint = p1;
+        while (true) {
+            window->SetColorsbuff(currentPoint.x, currentPoint.y, currentPoint.color.ToRGB());
+            if (currentPoint.x == p2.x && currentPoint.y == p2.y) break;
+
+            int err_ = 2 * err;
+            if (err_ >= -dy) { err -= dy; currentPoint.x += sx; }
+            if (err_ <= dx) { err += dx; currentPoint.y += sy; }
+
+            weight = (float)(currentPoint.x - p1.x) / (float)(p2.x - p1.x);
+            currentPoint.color = Color::Lerp(p1.color, p2.color, weight);
+        }
     }
 }
-void Rasterizer::DrawTriangleEdge(Point p1, Point p2, Point p3) {
+
+void Rasterizer::DrawTriangleEdge(const Point& p1, const Point& p2, const Point& p3) {
     // 画三角形的三条边
     DrawLine(p1, p2);
     DrawLine(p2, p3);

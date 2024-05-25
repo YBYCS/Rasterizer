@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Rasterizer.h"
 #include "Model.h"
+#include <math.h>
 
 #pragma comment(linker, "/subsystem:window /entry:WinMainCRTStartup")
 
@@ -25,25 +26,13 @@ void Start() {
     window->UpdateWindowBuffer();
 }
 
-//屏幕雪花噪点效果
-void SnowflakeNoise() {
-    for (int i = 0; i < window->GetWidth(); i++) {
-        for (int j = 0; j < window->GetHeight(); j++) {
-            int v = std::rand() % 255;
-            window->SetColorsbuff(j, i, RGB(v,v,v));
-        }
-    }
-}
-
 //主循环 逻辑放这里
 void Tick() {
     //首先应该将上一帧绘制内容清空
     window->Clear();
 
     //todo 执行渲染逻辑
-    //Rasterizer::DrawLine(Point(0, 0, Color(2, 3, 3)), Point(55, 55, Color(233, 233, 233)));
-
-    SnowflakeNoise();
+    DrawLineEffect();
 
     // 更新窗口显示
     window->UpdateWindowBuffer();
@@ -106,4 +95,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         Tick();
     }
     return 0;
+}
+
+//屏幕雪花噪点效果
+void SnowflakeNoise() {
+    for (int i = 0; i < window->GetWidth(); i++) {
+        for (int j = 0; j < window->GetHeight(); j++) {
+            int v = std::rand() % 255;
+            window->SetColorsbuff(j, i, RGB(v,v,v));
+        }
+    }
+}
+
+void DrawLineEffect() {
+    int r = 150;
+    Point c { 400, 300, Color(255, 0, 0, 255) };
+    for (float i = 0; i < 360; i++) {
+        float radian = i * 3.14159265358979323846264338f / 180.0f;
+        int x = r * sin(radian) + c.x;
+        int y = r * cos(radian) + c.y;
+        Point p { x, y, Color(rand() % 255, rand() % 255, rand() % 255) };
+        Rasterizer::DrawLine(c, p);
+    }
 }
