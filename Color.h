@@ -9,7 +9,7 @@
 
 class Color {
 public:
-    byte r, g, b,a;
+    byte r, g, b, a;
 
     Color(byte r = 255, byte g = 255, byte b = 255, byte a=255) : r(r), g(g), b(b) ,a(a){}
 

@@ -45,8 +45,8 @@ void Rasterizer::DrawLine(const Point& p1, const Point& p2) {
             if (currentPoint.x == p2.x && currentPoint.y == p2.y) break;
 
             int err_ = 2 * err;
-            if (err_ >= -dy) { err -= dy; currentPoint.x += sx; }
-            if (err_ <= dx) { err += dx; currentPoint.y += sy; }
+            if (err_ >= -dy) { err -= dy; currentPoint.x += sx; }   //朝x方向移动一个单位，减少了y方向上的偏差
+            if (err_ <= dx) { err += dx; currentPoint.y += sy; }    //朝y方向移动一个单位，减少了x方向上的偏差
 
             weight = (float)(currentPoint.x - p1.x) / (float)(p2.x - p1.x);
             currentPoint.color = Color::Lerp(p1.color, p2.color, weight);
