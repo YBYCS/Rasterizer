@@ -9,13 +9,8 @@ public:
 
     Vector2D(float x = 0, float y = 0) : x(x), y(y) {}
     Vector2D(const Vector2D& v) : x(v.x), y(v.y) {}
-    Vector2D(const Vector3D& v) : x(v.x), y(v.y) {}
-    Vector2D(const Vector4D& v) : x(v.x), y(v.y) {}
 
     Vector2D operator=(const Vector2D& v) { x = v.x; y = v.y; return *this; }
-    Vector2D operator=(const Vector3D& v) { x = v.x; y = v.y; return *this; }
-    Vector2D operator=(const Vector4D& v) { x = v.x; y = v.y; return *this; }
-
     Vector2D operator+(const Vector2D& v) const { return Vector2D(x + v.x, y + v.y); }
     Vector2D operator-(const Vector2D& v) const { return Vector2D(x - v.x, y - v.y); }
     Vector2D operator*(float scalar) const { return Vector2D(x * scalar, y * scalar); }   //标量乘法
@@ -27,12 +22,11 @@ public:
     Vector2D operator/=(float scalar) { x /= scalar; y /= scalar; return *this; }
 
     Vector2D operator-() { return Vector2D(-x, -y); }
-    //点积
-    float Dot(const Vector2D& v) const { return x * v.x + y * v.y; } 
-    //叉积
-    Vector2D Cross(const Vector2D& v) const { return x * v.y - y * v.x; }
+    Vector2D operator*(const Vector2D& v) const { return Vector2D(x * v.x, y *v.y); }
+    //模长的平方
+    float lengthSquared() const { return x * x + y * y; }
     //模长
-    float Length() const { return sqrt(x * x + y * y); }
+    float Length() const { return sqrt(lengthSquared()); }
     //标准化
     Vector2D Normalize() {
         float len = Length();
@@ -49,11 +43,9 @@ public:
     Vector3D(float x = 0, float y = 0, float z = 0) : x(x), y(y), z(z) {}
     Vector3D(const Vector2D& v) : x(v.x), y(v.y), z(0) {}
     Vector3D(const Vector3D& v) : x(v.x), y(v.y), z(z) {}
-    Vector3D(const Vector4D& v) : x(v.x), y(v.y), z(z) {}
 
     Vector3D operator=(const Vector2D& v) { x = v.x; y = v.y; z = 0; return *this; }
     Vector3D operator=(const Vector3D& v) { x = v.x; y = v.y; z = v.z; return *this; }
-    Vector3D operator=(const Vector4D& v) { x = v.x; y = v.y; z = v.z; return *this; }
 
     Vector3D operator+(const Vector3D& v) const { return Vector3D(x + v.x, y + v.y, z + v.z); }
     Vector3D operator-(const Vector3D& v) const { return Vector3D(x - v.x, y - v.y, z - v.z); }
@@ -66,18 +58,11 @@ public:
     Vector3D operator/=(float scalar) { x /= scalar; y /= scalar; z /= scalar; return *this; }
 
     Vector3D operator-() { return Vector3D(-x, -y, -z); }
-    //点积
-    float Dot(const Vector3D& v) const {  return x * v.x + y * v.y + z * v.z; } 
-    //叉积
-    Vector3D Cross(const Vector3D& v) const {
-        return Vector3D(
-            y * v.z - z * v.y,
-            z * v.x - x * v.z,
-            x * v.y - y * v.x
-        );
-    }
+    Vector3D operator*(const Vector3D& v) const { return Vector3D(x * v.x, y * v.y, z * v.z); }
+    //模长的平方
+    float lengthSquared() const { return sqrt(x * x + y * y + z * z); }
     //模长
-    float Length() const { return sqrt(x * x + y * y + z * z); }
+    float Length() const { return sqrt(lengthSquared()); }
     //标准化
     Vector3D Normalize() {
         float len = Length();
@@ -111,8 +96,11 @@ public:
     Vector4D operator/=(float scalar) { x /= scalar; y /= scalar; z /= scalar; w /= scalar; return *this; }
 
     Vector4D operator-() { return Vector4D(-x, -y, -z, -w); }
+    Vector4D operator*(const Vector4D& v) { return Vector4D(x * v.x, y * v.y, z * v.z, w * v.w); }
+    //模长的平方
+    float lengthSquared() const { return x * x + y * y + z * z + w * w; }
     //模长
-    float Length() const { return sqrt(x * x + y * y + z * z + w * w); }
+    float Length() const { return sqrt(lengthSquared()); }
     //标准化
     Vector4D Normalize() {
         float len = Length();
@@ -122,3 +110,21 @@ public:
         return *this;
     }
 };
+
+inline Vector2D abs(const Vector2D& v) { return Vector2D(std::abs(v.x), std::abs(v.y)); }
+inline Vector3D abs(const Vector3D& v) { return Vector3D(std::abs(v.x), std::abs(v.y), std::abs(v.z)); }
+inline Vector4D abs(const Vector4D& v) { return Vector4D(std::abs(v.x), std::abs(v.y), std::abs(v.z), std::abs(v.w)); }
+
+inline float Dot(const Vector2D& v1, const Vector2D& v2) { return v1.x * v2.x + v1.y * v2.y; };
+inline float Dot(const Vector3D& v1, const Vector3D& v2) { return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z; }
+inline float Dot(const Vector4D& v1, const Vector4D& v2) { return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w; }
+
+inline float Cross(const Vector2D& v1, const Vector2D& v2) { return v1.x * v2.y - v1.y * v2.x; }
+inline Vector3D Cross(const Vector3D& v1, const Vector3D& v2) {
+    return Vector3D(
+        v1.y * v2.z - v1.z * v2.y,
+        v1.z * v2.x - v1.x * v2.z,
+        v1.x * v2.y - v1.y * v2.x
+    );
+}
+//二维向量的叉积是一个标量，三维向量的叉积是一个向量，四维向量没有叉积

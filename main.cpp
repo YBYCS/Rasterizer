@@ -3,6 +3,7 @@
 #include "Rasterizer.h"
 #include "Model.h"
 #include <math.h>
+#include "Vector.h"
 
 #pragma comment(linker, "/subsystem:window /entry:WinMainCRTStartup")
 
@@ -84,7 +85,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     std::cout << "hello world" << std::endl;
     window->InitializeWindow(hInstance);
     Start();
-
     // Main message loop
     MSG msg = {};
 
