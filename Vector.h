@@ -28,12 +28,7 @@ public:
     //模长
     float Length() const { return sqrt(lengthSquared()); }
     //标准化
-    Vector2D Normalize() {
-        float len = Length();
-        if (len != 0)
-            x /= len; y /= len;
-        return *this;
-    }
+    Vector2D Normalize() { return *this / Length(); }
 };
 
 class Vector3D {
@@ -64,12 +59,7 @@ public:
     //模长
     float Length() const { return sqrt(lengthSquared()); }
     //标准化
-    Vector3D Normalize() {
-        float len = Length();
-        if (len != 0)
-            x /= len; y /= len; z /= len;
-        return *this;
-    }
+    Vector3D Normalize() { return *this / Length(); }
 };
 
 class Vector4D {
@@ -102,13 +92,7 @@ public:
     //模长
     float Length() const { return sqrt(lengthSquared()); }
     //标准化
-    Vector4D Normalize() {
-        float len = Length();
-        if (len != 0) {
-            x /= len; y /= len; z /= len; w /= len;
-        }
-        return *this;
-    }
+    Vector4D Normalize() { return *this / Length(); }
 };
 
 inline Vector2D abs(const Vector2D& v) { return Vector2D(std::abs(v.x), std::abs(v.y)); }
