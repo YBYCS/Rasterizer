@@ -145,7 +145,7 @@ void WindowController::UpdateWindowBuffer() {
 }
 
 void WindowController::SetColorsbuff(int x, int y, unsigned long color) {
-    colorsbuff_[x][y] = color;
+    colorsbuff_[y][x] = color;
 }
 
 void WindowController::Clear() {
