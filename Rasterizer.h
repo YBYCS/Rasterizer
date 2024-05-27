@@ -15,7 +15,7 @@ public:
     
     static float TriangleArea(const Point &p1, const Point &p2, const Point &p3);
 
-    static void DrawTriangle(Point p1, Point p2, Point p3);
+    static void DrawTriangle(const Point& p1, const Point& p2, const Point& p3);
     static void DrawTriangleEdge(const Point& p1, const Point& p2, const Point& p3);
     //普通的正交投影
     static Vec2 project(const Vec3 &vertex) {
