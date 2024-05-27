@@ -16,7 +16,7 @@ Color Color::Lerp(const Color &start, const Color &end, float t)
     );
 }
 
-unsigned long Color::ToRGB() const
+unsigned long Color::ToBGR() const
 {
     return RGB(b, g, r);    //GDI中默认颜色通道是BGRA
 }

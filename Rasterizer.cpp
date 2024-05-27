@@ -27,21 +27,21 @@ void Rasterizer::DrawLine(const Point& p1, const Point& p2) {
         for (int y = std::min(p1.y, p2.y); y <= std::max(p1.y, p2.y); ++y) {
             Point currentPoint(p1.x, y);
             weight = (float)(currentPoint.y - p1.y) / (float)(p2.y - p1.y);
-            window->SetColorsbuff(currentPoint.x, currentPoint.y, Color::Lerp(p1.color, p2.color, weight).ToRGB());
+            window->SetColorsbuff(currentPoint.x, currentPoint.y, Color::Lerp(p1.color, p2.color, weight).ToBGR());
         }
     } else if (dy == 0) {
         // 水平线
         for (int x = std::min(p1.x, p2.x); x <= std::max(p1.x, p2.x); ++x) {
             Point currentPoint(x, p1.y);
             weight = (float)(currentPoint.x - p1.x) / (float)(p2.x - p1.x);
-            window->SetColorsbuff(currentPoint.x, currentPoint.y, Color::Lerp(p1.color, p2.color, weight).ToRGB());
+            window->SetColorsbuff(currentPoint.x, currentPoint.y, Color::Lerp(p1.color, p2.color, weight).ToBGR());
         }
     } else {
         int err = dx - dy;
 
         Point currentPoint = p1;
         while (true) {
-            window->SetColorsbuff(currentPoint.x, currentPoint.y, currentPoint.color.ToRGB());
+            window->SetColorsbuff(currentPoint.x, currentPoint.y, currentPoint.color.ToBGR());
             if (currentPoint.x == p2.x && currentPoint.y == p2.y) break;
 
             int err_ = 2 * err;
@@ -97,7 +97,7 @@ void Rasterizer::DrawTriangle(Point p1, Point p2, Point p3) {
         for (int x = x1; x <= x2; ++x) {
             if (x < 0 || x >= window->GetWidth()) continue;
             Color interpolatedColor = colorInterpolate(x, y, p1, p2, p3);
-            window->SetColorsbuff(x, y, interpolatedColor.ToRGB());
+            window->SetColorsbuff(x, y, interpolatedColor.ToBGR());
         }
     }
 }

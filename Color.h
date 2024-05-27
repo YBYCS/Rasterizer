@@ -16,7 +16,7 @@ public:
     // 线性插值
     static Color Lerp(const Color &start, const Color &end, float t);
 
-    unsigned long ToRGB() const ;
+    unsigned long ToBGR() const ;
 };
 
 
