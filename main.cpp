@@ -4,6 +4,7 @@
 #include "Model.h"
 #include <math.h>
 #include "Vector.h"
+#include "Matrix.h"
 
 #pragma comment(linker, "/subsystem:window /entry:WinMainCRTStartup")
 
@@ -24,6 +25,8 @@ void Start() {
     // } else {
     //     std::cout << "打开文件失败" << std::endl;
     // }
+    Matrix4 m = {1.0f,0.0f,0.0f,0.0f,2.0f,1.0f,0.0f,0.0f,3.0f,2.0f,1.0f,0.0f,4.0f,3.0f,2.0f,1.0f};
+    PrintMatrix(Inverse(m));
     window->UpdateWindowBuffer();
 }
 
@@ -38,8 +41,6 @@ void Tick() {
     // 更新窗口显示
     window->UpdateWindowBuffer();
 }
-
-
 
 // 显示一个打印窗口
 void RedirectIOToConsole() {
@@ -87,7 +88,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     Start();
     // Main message loop
     MSG msg = {};
-
+    
     //Tick 循环
     bool alive = true;
     while (alive) {
