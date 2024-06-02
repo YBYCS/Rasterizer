@@ -23,7 +23,6 @@ public:
     Vector2 operator/=(float scalar) { x /= scalar; y /= scalar; return *this; }
 
     Vector2 operator-() { return Vector2(-x, -y); }
-    Vector2 operator*(const Vector2& v) const { return Vector2(x * v.x, y *v.y); }
     //模长的平方
     float lengthSquared() const { return x * x + y * y; }
     //模长
@@ -54,7 +53,6 @@ public:
     Vector3 operator/=(float scalar) { x /= scalar; y /= scalar; z /= scalar; return *this; }
 
     Vector3 operator-() { return Vector3(-x, -y, -z); }
-    Vector3 operator*(const Vector3& v) const { return Vector3(x * v.x, y * v.y, z * v.z); }
     //模长的平方
     float lengthSquared() const { return sqrt(x * x + y * y + z * z); }
     //模长
@@ -87,7 +85,6 @@ public:
     Vector4 operator/=(float scalar) { x /= scalar; y /= scalar; z /= scalar; w /= scalar; return *this; }
 
     Vector4 operator-() { return Vector4(-x, -y, -z, -w); }
-    Vector4 operator*(const Vector4& v) { return Vector4(x * v.x, y * v.y, z * v.z, w * v.w); }
     //模长的平方
     float lengthSquared() const { return x * x + y * y + z * z + w * w; }
     //模长
@@ -95,6 +92,18 @@ public:
     //标准化
     Vector4 Normalize() { return *this / Length(); }
 };
+
+inline Vector2 operator*(float s, const Vector2& v) { return v * s; }
+inline Vector3 operator*(float s, const Vector3& v) { return v * s; }
+inline Vector4 operator*(float s, const Vector4& v) { return v * s; }
+
+inline Vector2 operator*(const Vector2& v1, const Vector2& v2) { return Vector2(v1.x * v2.x, v1.y * v2.y); }
+inline Vector3 operator*(const Vector3& v1, const Vector3& v2) { return Vector3(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z); }
+inline Vector4 operator*(const Vector4& v1, const Vector4& v2) { return Vector4(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z, v1.w * v2.w); }
+
+inline Vector2 Normalize(const Vector2& v) { return v / v.Length(); }
+inline Vector3 Normalize(const Vector3& v) { return v / v.Length(); }
+inline Vector4 Normalize(const Vector4& v) { return v / v.Length(); }
 
 inline Vector2 abs(const Vector2& v) { return Vector2(std::abs(v.x), std::abs(v.y)); }
 inline Vector3 abs(const Vector3& v) { return Vector3(std::abs(v.x), std::abs(v.y), std::abs(v.z)); }

@@ -312,3 +312,74 @@ void PrintMatrix(const Matrix4 &matrix)
         std::cout << std::endl;
     }
 }
+
+Matrix4 Scale(const Matrix4& matrix, float x, float y, float z)
+{
+    Matrix4 res;
+    res.SetColum(0, matrix.GetColum(0) * x);
+    res.SetColum(1, matrix.GetColum(1) * y);
+    res.SetColum(2, matrix.GetColum(2) * z);
+    res.SetColum(3, matrix.GetColum(3));
+    return res;
+}
+
+Matrix4 Translate(const Matrix4 &matrix, float x, float y, float z)
+{
+    Matrix4 res;
+    //这里是 方向 * 距离 = 位移
+    //拿 matrix.GetColum(0) * x 举例，这代表了物体在模型空间下沿着自身x轴的位移
+    //其中 matrix.GetColum(0) 代表了模型空间下物体x轴方向，x代表了移动的距离
+    res.SetColum(3, Vector4(matrix.GetColum(0) * x + matrix.GetColum(1) * y + matrix.GetColum(2) * z + matrix.GetColum(3)));
+    return res;
+}
+
+Matrix4 Translate(const Matrix4& matrix, const Vector3& v)
+{
+    return Translate(matrix, v.x, v.y, v.z);
+}
+
+Matrix4 rotateMartix(const Matrix4 &matrix, const Vector3 &v, float angle)
+{
+    float c = std::cos(angle);
+    float s = std::sin(angle);
+    float temp = 1 - c;
+
+    Vector3 axis = Normalize(v);    //得到旋转轴的单位向量
+    float Ux = axis.x;
+    float Uy = axis.y;
+    float Uz = axis.z;
+    
+    Matrix4 rotateMartix;
+    rotateMartix.Set(0, 0, Ux * Ux * temp + c);
+    rotateMartix.Set(1, 0, Ux * Uy * temp + Uz * s);
+    rotateMartix.Set(2, 0, Ux * Uz * temp - Uy * s);
+    rotateMartix.Set(0, 1, Ux * Uy * temp - Uz * s);
+    rotateMartix.Set(1, 1, Uy * Uy * temp + c);
+    rotateMartix.Set(2, 1, Uy * Uz * temp + Ux * s);
+    rotateMartix.Set(0, 2, Ux * Uz * temp + Uy * s);
+    rotateMartix.Set(1, 2, Uy * Uz * temp - Ux * s);
+    rotateMartix.Set(2, 2, Uz * Uz * temp + c);
+
+    //应用旋转矩阵。这里是右乘旋转矩阵，注意区分左乘和右乘的区别
+    auto rCol0 = rotateMartix.GetColum(0);
+    auto rCol1 = rotateMartix.GetColum(1);
+    auto rCol2 = rotateMartix.GetColum(2);
+    auto rCol3 = rotateMartix.GetColum(3);
+
+    auto srcCol0 = matrix.GetColum(0);
+    auto srcCol1 = matrix.GetColum(1);
+    auto srcCol2 = matrix.GetColum(2);
+    auto srcCol3 = matrix.GetColum(3);
+
+    auto col0 = srcCol0 * rCol0.x + srcCol1 * rCol0.y + srcCol2 * rCol0.z;
+    auto col1 = srcCol0 * rCol1.x + srcCol1 * rCol1.y + srcCol2 * rCol1.z;
+    auto col2 = srcCol0 * rCol2.x + srcCol1 * rCol2.y + srcCol2 * rCol2.z;
+    auto col3 = srcCol3;    //平移不应用
+
+    Matrix4 res;
+    res.SetColum(0, col0);
+    res.SetColum(1, col1);
+    res.SetColum(2, col2);
+    res.SetColum(3, col3);
+    return res;
+}

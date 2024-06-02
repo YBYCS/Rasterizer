@@ -30,9 +30,9 @@ public:
 public:
     Matrix4(float v = 1.0f);
     Matrix4(float m00, float m01, float m02, float m03,
-			 float m10, float m11, float m12, float m13,
-			 float m20, float m21, float m22, float m23,
-			 float m30, float m31, float m32, float m33);
+            float m10, float m11, float m12, float m13,
+            float m20, float m21, float m22, float m23,
+            float m30, float m31, float m32, float m33);
     Matrix4(const Matrix4& other);
     Matrix4 operator*(float s) const;
     Vector4 operator*(const Vector4& v) const;
@@ -56,3 +56,10 @@ Matrix4 Transpose(const Matrix4& matrix);
 Matrix4 Inverse(const Matrix4& matrix);
 void PrintMatrix(const Matrix3& matrix);
 void PrintMatrix(const Matrix4& matrix);
+//对矩阵进行缩放
+Matrix4 Scale(const Matrix4& matrix, float x, float y, float z);
+//对矩阵进行平移，参数为模型空间下的x、y、z距离
+Matrix4 Translate(const Matrix4& matrix, float x, float y, float z);
+Matrix4 Translate(const Matrix4& matrix, const Vector3& v);
+//绕着任意轴旋转矩阵
+Matrix4 rotateMartix(const Matrix4& matrix, const Vector3& v, float angle);

@@ -25,8 +25,9 @@ void Start() {
     // } else {
     //     std::cout << "打开文件失败" << std::endl;
     // }
-    Matrix4 m = {1.0f,0.0f,0.0f,0.0f,2.0f,1.0f,0.0f,0.0f,3.0f,2.0f,1.0f,0.0f,4.0f,3.0f,2.0f,1.0f};
-    PrintMatrix(Inverse(m));
+    Matrix4 m1 = {1,0,0,0,0,1,0,0,0,0,1,0,2,2,2,1};
+    Matrix4 m2 = {3,3,3,0,4,4,4,0,-1,-1,-1,0,0,0,0,1};
+    PrintMatrix(m1 * m2);
     window->UpdateWindowBuffer();
 }
 
