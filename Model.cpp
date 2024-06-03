@@ -6,6 +6,8 @@
 #include "fstream"
 #include "iostream"
 #include "sstream"
+#include "Point.h"
+
 bool Model::LoadOBJ(const std::string &filename, Model &model)
 {
     std::ifstream file(filename);
@@ -21,15 +23,15 @@ bool Model::LoadOBJ(const std::string &filename, Model &model)
         lineStream >> prefix;
 
         if (prefix == "v") {
-            Vec3 vertex;
+            Vector3 vertex;
             lineStream >> vertex.x >> vertex.y >> vertex.z;
             model.vertices.push_back(vertex);
         } else if (prefix == "vt") {
-            Vec2 uv;
-            lineStream >> uv.u >> uv.v;
+            Vector2 uv;
+            lineStream >> uv.x >> uv.y;
             model.uvs.push_back(uv);
         } else if (prefix == "vn") {
-            Vec3 normal;
+            Vector3 normal;
             lineStream >> normal.x >> normal.y >> normal.z;
             model.normals.push_back(normal);
         } else if (prefix == "f") {

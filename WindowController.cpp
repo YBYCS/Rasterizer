@@ -27,15 +27,15 @@ void WindowController::InitializeWindow(HINSTANCE hInstance) {
     CreateAWindow(hInstance);
 
     //初始化buff
-    colorsbuff_ = new COLORREF *[height_];
-    for (int y = 0; y < height_; ++y) {
-        colorsbuff_[y] = new COLORREF[width_];
-        for (int x = 0; x < width_; ++x) {
+    colorsbuff_ = new COLORREF *[height_ + 1];
+    for (int y = 0; y <= height_; ++y) {
+        colorsbuff_[y] = new COLORREF[width_ + 1];
+        for (int x = 0; x <= width_; ++x) {
             colorsbuff_[y][x] = 0;
         }
     }
     // 初始化 flatArray_
-    flatArray_ = new COLORREF[width_ * height_];
+    flatArray_ = new COLORREF[(width_ + 1) * (height_ + 1)];
 
     // 设置位图信息
     ZeroMemory(&bmi_, sizeof(bmi_));
@@ -132,9 +132,9 @@ void WindowController::UpdateWindowBuffer() {
     if (!hwnd_)
         return;
 
-    for (int y = 0; y < height_; ++y) {
-        for (int x = 0; x < width_; ++x) {
-            flatArray_[(height_ - y - 1) * width_ + x] = colorsbuff_[y][x];
+    for (int y = 0; y <= height_; ++y) {
+        for (int x = 0; x <= width_; ++x) {
+            flatArray_[(height_ - y ) * width_ + x] = colorsbuff_[y][x];
         }
     }
 
@@ -149,8 +149,8 @@ void WindowController::SetColorsbuff(int x, int y, unsigned long color) {
 }
 
 void WindowController::Clear() {
-    for (int i = 0; i < height_; i++) {
-        for (int j = 0; j < width_; j++) {
+    for (int i = 0; i <= height_; i++) {
+        for (int j = 0; j <= width_; j++) {
             colorsbuff_[i][j] = 0;
         }
     }

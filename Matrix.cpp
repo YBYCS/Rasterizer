@@ -3,6 +3,8 @@
 #include <iterator>
 #include <cassert>
 #include <iostream>
+#include <math.h>
+#include "WindowController.h"
 
 Matrix3::Matrix3(float v) 
 {
@@ -48,16 +50,23 @@ Vector3 Matrix3::operator*(const Vector3 &v) const
 
 Matrix3 Matrix3::operator*(const Matrix3 &other) const
 {
+    auto m1Col0 = GetColum(0);
+    auto m1Col1 = GetColum(1);
+    auto m1Col2 = GetColum(2);
+
+    auto m2Col0 = other.GetColum(0);
+    auto m2Col1 = other.GetColum(1);
+    auto m2Col2 = other.GetColum(2);
+
+    Vector3 rCol0, rCol1, rCol2;
+    rCol0 = m1Col0 * m2Col0.x + m1Col1 * m2Col0.y + m1Col2 * m2Col0.z;
+    rCol1 = m1Col0 * m2Col1.x + m1Col1 * m2Col1.y + m1Col2 * m2Col1.z;
+    rCol2 = m1Col0 * m2Col2.x + m1Col1 * m2Col2.y + m1Col2 * m2Col2.z;
+
     Matrix3 res;
-    for (int i = 0; i < 3; ++i) { // 遍历结果矩阵的行
-        for (int j = 0; j < 3; ++j) { // 遍历结果矩阵的列
-            float sum = 0.0;
-            for (int k = 0; k < 3; ++k) { // 遍历两个矩阵的共同维度
-                sum += m[i * 3 + k] * other.m[k * 3 + j]; // 注意索引的计算
-            }
-            res.m[i * 3 + j] = sum;
-        }
-    }
+    res.SetColum(0, rCol0);
+    res.SetColum(1, rCol1);
+    res.SetColum(2, rCol2);
     return res;
 }
 
@@ -134,16 +143,27 @@ Vector4 Matrix4::operator*(const Vector4 &v) const
 
 Matrix4 Matrix4::operator*(const Matrix4 &other) const
 {
+    auto m1Col0 = GetColum(0);
+    auto m1Col1 = GetColum(1);
+    auto m1Col2 = GetColum(2);
+    auto m1Col3 = GetColum(3);
+
+    auto m2Col0 = other.GetColum(0);
+    auto m2Col1 = other.GetColum(1);
+    auto m2Col2 = other.GetColum(2);
+    auto m2Col3 = other.GetColum(3);
+
+    Vector4 rCol0, rCol1, rCol2, rCol3;
+    rCol0 = m1Col0 * m2Col0.x + m1Col1 * m2Col0.y + m1Col2 * m2Col0.z + m1Col3 * m2Col0.w;
+    rCol1 = m1Col0 * m2Col1.x + m1Col1 * m2Col1.y + m1Col2 * m2Col1.z + m1Col3 * m2Col1.w;
+    rCol2 = m1Col0 * m2Col2.x + m1Col1 * m2Col2.y + m1Col2 * m2Col2.z + m1Col3 * m2Col2.w;
+    rCol3 = m1Col0 * m2Col3.x + m1Col1 * m2Col3.y + m1Col2 * m2Col3.z + m1Col3 * m2Col3.w;
+
     Matrix4 res;
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            double sum = 0.0;
-            for (int k = 0; k < 4; ++k) {
-                sum += m[i * 4 + k] * other.m[k * 4 + j];
-            }
-            res.m[i * 4 + j] = sum;
-        }
-    }
+    res.SetColum(0, rCol0);
+    res.SetColum(1, rCol1);
+    res.SetColum(2, rCol2);
+    res.SetColum(3, rCol3);
     return res;
 }
 
@@ -325,7 +345,7 @@ Matrix4 Scale(const Matrix4& matrix, float x, float y, float z)
 
 Matrix4 Translate(const Matrix4 &matrix, float x, float y, float z)
 {
-    Matrix4 res;
+    Matrix4 res(matrix);
     //这里是 方向 * 距离 = 位移
     //拿 matrix.GetColum(0) * x 举例，这代表了物体在模型空间下沿着自身x轴的位移
     //其中 matrix.GetColum(0) 代表了模型空间下物体x轴方向，x代表了移动的距离
@@ -338,7 +358,7 @@ Matrix4 Translate(const Matrix4& matrix, const Vector3& v)
     return Translate(matrix, v.x, v.y, v.z);
 }
 
-Matrix4 rotateMartix(const Matrix4 &matrix, const Vector3 &v, float angle)
+Matrix4 RotateMartix(const Matrix4 &matrix, const Vector3 &v, float angle)
 {
     float c = std::cos(angle);
     float s = std::sin(angle);
@@ -360,7 +380,7 @@ Matrix4 rotateMartix(const Matrix4 &matrix, const Vector3 &v, float angle)
     rotateMartix.Set(1, 2, Uy * Uz * temp - Ux * s);
     rotateMartix.Set(2, 2, Uz * Uz * temp + c);
 
-    //应用旋转矩阵。这里是右乘旋转矩阵，注意区分左乘和右乘的区别
+    //应用旋转矩阵。这里由于是列视图，用的是右乘旋转矩阵，注意区分左乘和右乘的区别
     auto rCol0 = rotateMartix.GetColum(0);
     auto rCol1 = rotateMartix.GetColum(1);
     auto rCol2 = rotateMartix.GetColum(2);
@@ -381,5 +401,46 @@ Matrix4 rotateMartix(const Matrix4 &matrix, const Vector3 &v, float angle)
     res.SetColum(1, col1);
     res.SetColum(2, col2);
     res.SetColum(3, col3);
+    return res;
+}
+
+Matrix4 Orthographic(float left, float right, float bottom, float top, float n, float f)
+{
+    Matrix4 res;
+    res.Set(0, 0, 2.0F / (right - left));
+    res.Set(0, 3, -(right + left) / (right - left));
+    res.Set(1, 1, 2.0f / (top - bottom));
+    res.Set(1, 3, -(top + bottom) / (top - bottom));
+    res.Set(2, 2, -2.0f / (f - n));
+    res.Set(2, 3, -(f + n) / (f - n));
+    return res;
+}
+
+Matrix4 Perspective(float fovy, float n, float f, float aspect) 
+{
+    // 0.01745329251994329 是 Π / 180
+    float tanHalfFovy = std::tan(0.01745329251994329f * (fovy / 2.0f));
+
+    Matrix4 res;
+    res.Set(0, 0, 1.0f / (aspect * tanHalfFovy));
+    res.Set(1, 1, 1.0f / (tanHalfFovy));
+    res.Set(2, 2, -(f + n) / (f - n));
+    res.Set(2, 3, -2.0f * f * n / (f - n));
+    res.Set(3, 2, -1.0f);
+    res.Set(3, 3, 0);
+    return res;
+}
+
+Matrix4 ScreenMatrix(int width, int height) {
+    float halfWidth = width / 2.0f;
+    float halfHeight = height / 2.0f;
+    
+    Matrix4 res;
+    res.Set(0, 0, halfWidth);
+    res.Set(0, 3, halfWidth);
+    res.Set(1, 1, halfHeight);
+    res.Set(1, 3, halfHeight);
+    res.Set(2, 2, 0.5f);
+    res.Set(2, 3, 0.5f);
     return res;
 }

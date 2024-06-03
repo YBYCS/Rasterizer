@@ -1,4 +1,5 @@
 #include "Vector.h"
+#include "WindowController.h"
 class Matrix4;
 
 // OpenGL中矩阵是列优先存储的。即：
@@ -62,4 +63,10 @@ Matrix4 Scale(const Matrix4& matrix, float x, float y, float z);
 Matrix4 Translate(const Matrix4& matrix, float x, float y, float z);
 Matrix4 Translate(const Matrix4& matrix, const Vector3& v);
 //绕着任意轴旋转矩阵
-Matrix4 rotateMartix(const Matrix4& matrix, const Vector3& v, float angle);
+Matrix4 RotateMartix(const Matrix4& matrix, const Vector3& v, float angle);
+//根据投影盒的参数生成正交投影矩阵
+Matrix4 Orthographic(float left, float right, float bottom, float top, float near, float far);
+//根据视锥体的参数生成透视投影矩阵
+Matrix4 Perspective(float fovy, float n, float f, float aspect = (float)window->GetWidth() / (float)window->GetHeight());
+//屏幕空间变换矩阵
+Matrix4 ScreenMatrix(int width = window->GetWidth(), int height = window->GetHeight());

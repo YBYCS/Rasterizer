@@ -15,42 +15,31 @@ Rasterizer::~Rasterizer()
 void Rasterizer::DrawLine(const Point& p1, const Point& p2) {
     int dx = abs(p2.x - p1.x);   //计算x方向的增量（绝对值）
     int dy = abs(p2.y - p1.y);   //计算y方向的增量（绝对值）
+
+    //两点重合
+    if (dx == 0 && dy == 0) {
+        window->SetColorsbuff(p1.x, p1.y, Color::Lerp(p1.color, p2.color, 0.5f).ToBGR());
+        return;
+    }
+
     int sx = (p1.x < p2.x) ? 1 : -1; //确定x方向的步长（正向或反向）
     int sy = (p1.y < p2.y) ? 1 : -1; //确定y方向的步长（正向或反向）
-    
-    //颜色插值权重
-    float weight = 1.0f;
 
-    // 检查 dx 和 dy 是否为零
-    if (dx == 0) {
-        // 垂直线
-        for (int y = std::min(p1.y, p2.y); y <= std::max(p1.y, p2.y); ++y) {
-            Point currentPoint(p1.x, y);
-            weight = (float)(currentPoint.y - p1.y) / (float)(p2.y - p1.y);
-            window->SetColorsbuff(currentPoint.x, currentPoint.y, Color::Lerp(p1.color, p2.color, weight).ToBGR());
-        }
-    } else if (dy == 0) {
-        // 水平线
-        for (int x = std::min(p1.x, p2.x); x <= std::max(p1.x, p2.x); ++x) {
-            Point currentPoint(x, p1.y);
-            weight = (float)(currentPoint.x - p1.x) / (float)(p2.x - p1.x);
-            window->SetColorsbuff(currentPoint.x, currentPoint.y, Color::Lerp(p1.color, p2.color, weight).ToBGR());
-        }
-    } else {
-        int err = dx - dy;
+    int err = dx - dy;
 
-        Point currentPoint = p1;
-        while (true) {
-            window->SetColorsbuff(currentPoint.x, currentPoint.y, currentPoint.color.ToBGR());
-            if (currentPoint.x == p2.x && currentPoint.y == p2.y) break;
+    Point currentPoint = p1;
+    while (true) {
+        window->SetColorsbuff(currentPoint.x, currentPoint.y, currentPoint.color.ToBGR());
+        if (currentPoint.x == p2.x && currentPoint.y == p2.y) break;
 
-            int err_ = 2 * err;
-            if (err_ >= -dy) { err -= dy; currentPoint.x += sx; }   //朝x方向移动一个单位，减少了y方向上的偏差
-            if (err_ <= dx) { err += dx; currentPoint.y += sy; }    //朝y方向移动一个单位，减少了x方向上的偏差
+        int err_ = 2 * err;
+        if (err_ >= -dy) { err -= dy; currentPoint.x += sx; }   //朝x方向移动一个单位，减少了y方向上的偏差
+        if (err_ <= dx) { err += dx; currentPoint.y += sy; }    //朝y方向移动一个单位，减少了x方向上的偏差
 
-            weight = (float)(currentPoint.x - p1.x) / (float)(p2.x - p1.x);
-            currentPoint.color = Color::Lerp(p1.color, p2.color, weight);
-        }
+        float weight = (dx > dy) 
+            ? (float)(currentPoint.x - p1.x) / (float)(p2.x - p1.x)
+            : (float)(currentPoint.y - p1.y) / (float)(p2.y - p1.y);
+        currentPoint.color = Color::Lerp(p1.color, p2.color, weight);
     }
 }
 
@@ -60,6 +49,7 @@ void Rasterizer::DrawTriangleEdge(const Point& p1, const Point& p2, const Point&
     DrawLine(p2, p3);
     DrawLine(p3, p1);
 }
+
 void Rasterizer::DrawTriangle(const Point& p1, const Point& p2, const Point& p3) {
     float totalArea = TriangleArea(p1, p2, p3);
     //重心插值
