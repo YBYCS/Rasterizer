@@ -145,6 +145,8 @@ void WindowController::UpdateWindowBuffer() {
 }
 
 void WindowController::SetColorsbuff(int x, int y, unsigned long color) {
+    if (x > width_ || y > height_)
+        return;
     colorsbuff_[y][x] = color;
 }
 

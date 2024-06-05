@@ -4,6 +4,7 @@
 #include "Model.h"
 #include <math.h>
 #include "Vector.h"
+#include "Image.h"
 
 #pragma comment(linker, "/subsystem:window /entry:WinMainCRTStartup")
 

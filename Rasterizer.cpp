@@ -50,6 +50,15 @@ void Rasterizer::DrawTriangleEdge(const Point& p1, const Point& p2, const Point&
     DrawLine(p3, p1);
 }
 
+void Rasterizer::DrawImage(const Image *image)
+{
+    for (int i = 0; i < image->width; i++) {
+        for (int j = 0; j < image->height; j++) {
+            window->SetColorsbuff(i, j, image->color[j * image->width + i].ToBGR());
+        }
+    }
+}
+
 void Rasterizer::DrawTriangle(const Point& p1, const Point& p2, const Point& p3) {
     float totalArea = TriangleArea(p1, p2, p3);
     //重心插值
