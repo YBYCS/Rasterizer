@@ -6,6 +6,7 @@
 #include "Vector.h"
 #include "Image.h"
 #include "Matrix.h"
+#include <memory>
 
 #pragma comment(linker, "/subsystem:window /entry:WinMainCRTStartup")
 
@@ -25,9 +26,9 @@ void Start() {
     // }
 
     //Rasterizer::DrawTriangle(Point(100, 100, 73, 14, 104, 255), Point(400, 500, 105, 240, 211, 255), Point(700, 100, 255, 0, 0, 255));
-    Image* image = Image::CreateImage("assets/picture/Genshin.png");
+    std::unique_ptr<Image> image = Image::CreateImage("assets/picture/Genshin.png");
     Rasterizer::SetBlending(true);
-    Rasterizer::DrawImageWithAlpha(image, 100);
+    Rasterizer::DrawImageWithAlpha(image.get(), 100);
     window->UpdateWindowBuffer();
 }
 

@@ -66,7 +66,7 @@ void Rasterizer::DrawImage(const Image *image)
 {
     for (int i = 0; i < image->width; i++) {
         for (int j = 0; j < image->height; j++) {
-            window->DrawPoint(i, j, image->color[j * image->width + i]);
+            window->DrawPoint(i, j, image->colors[j * image->width + i]);
         }
     }
 }
@@ -76,7 +76,7 @@ void Rasterizer::DrawImageWithAlpha(const Image *image, byte alpha)
     Color color;
     for (int i = 0; i < image->width; i++) {
         for (int j = 0; j < image->height; j++) {
-            color = image->color[j * image->width + i];
+            color = image->colors[j * image->width + i];
             color.a = alpha;
             window->DrawPoint(i, j, color);
         }

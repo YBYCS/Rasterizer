@@ -1,16 +1,18 @@
 #pragma once
 #include "Color.h"
 #include <string>
+#include <memory>
 
 class Image {
 public:
     int width = 0;
     int height = 0;
-    Color* color = nullptr;
+    std::unique_ptr<Color[]> colors;
 public:
     Image(int width = 0, int height = 0, Color* data = nullptr);
+    Image(const Image&) = delete;
+    Image& operator=(const Image&) = delete;
     ~Image();
 
-    static Image* CreateImage(const std::string& path);
-    static void DestoryImage(Image* image);
+    static std::unique_ptr<Image> CreateImage(const std::string& path);
 };

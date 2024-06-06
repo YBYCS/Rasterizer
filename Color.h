@@ -17,5 +17,4 @@ public:
     static Color Lerp(const Color &start, const Color &end, float t);
 };
 
-
 #endif //RASTERIZER_COLOR_H

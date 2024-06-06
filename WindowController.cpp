@@ -34,7 +34,7 @@ void WindowController::InitializeWindow(HINSTANCE hInstance)
     BITMAPINFO bmi;
     bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bmi.bmiHeader.biWidth = width_;
-    bmi.bmiHeader.biHeight = -height_;
+    bmi.bmiHeader.biHeight = height_;
     bmi.bmiHeader.biPlanes = 1;
     bmi.bmiHeader.biBitCount = 32;  //设置每个像素的位数，这里设置为32位意味着每个像素包含4个字节
     bmi.bmiHeader.biCompression = BI_RGB;
@@ -130,8 +130,7 @@ void WindowController::HandleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
 
 void WindowController::UpdateWindowBuffer() 
 {
-    if (!hwnd_)
-        return;
+    if (!hwnd_) return;
 
     //将内存设备上下文的内容复制到窗口设备上下文
     BitBlt(hdc_, 0, 0, width_, height_, memDC_, 0, 0, SRCCOPY);
@@ -139,8 +138,7 @@ void WindowController::UpdateWindowBuffer()
 
 void WindowController::DrawPoint(int x, int y, Color color) 
 {
-    if (x >= width_ || y >= height_)
-        return;
+    if (x >= width_ || y >= height_) return;
 
     Color res = color;
     int index = y * width_ + x;

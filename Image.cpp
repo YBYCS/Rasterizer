@@ -3,23 +3,17 @@
 #include "Image.h"
 #include <iostream>
 
-Image::Image(int width, int height, Color *color)
+Image::Image(int width, int height, Color *color) : width(width), height(height), colors(nullptr)
 {
-    this->width = width;
-    this->height = height;
     if (color) {
-        this->color = new Color[width * height];
-        memcpy(this->color, color, sizeof(Color) * width * height);
+        colors = std::make_unique<Color[]>(width * height);
+        memcpy(colors.get(), color, sizeof(Color) * width * height);
     }
 }
 
-Image::~Image()
-{
-    if (color)
-        delete[] color;
-}
+Image::~Image() {}
 
-Image *Image::CreateImage(const std::string &path)
+std::unique_ptr<Image> Image::CreateImage(const std::string &path)
 {
     int width = 0, height = 0, type = 0;
 
@@ -35,19 +29,11 @@ Image *Image::CreateImage(const std::string &path)
 
     //图片默认颜色通道为BGRA，GDI默认颜色通道为RGBA，因此需要将图片中每个像素的 R 和 B交换
     for (int i = 0; i < width * height * 4; i += 4) {
-        byte temp = bits[i];
-        bits[i] = bits[i + 2];
-        bits[i + 2] = temp;
+        std::swap(bits[i], bits[i + 2]);
     }
 
-    Image* image = new Image(width, height, (Color*)bits);
+    auto image = std::make_unique<Image>(width, height, (Color*)bits);
     //上一行代码已经将bits拷贝到image里了，这一行代码用于删掉bits
     stbi_image_free(bits);  
     return image;
-}
-
-void Image::DestoryImage(Image *image)
-{
-    if (image) 
-        delete image;
 }
