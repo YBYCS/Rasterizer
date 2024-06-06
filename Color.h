@@ -9,14 +9,12 @@
 
 class Color {
 public:
-    byte r, g, b, a;
+    byte b, g, r, a;    //默认颜色通道是BGRA
 
     Color(byte r = 255, byte g = 255, byte b = 255, byte a=255) : r(r), g(g), b(b) ,a(a){}
 
     // 线性插值
     static Color Lerp(const Color &start, const Color &end, float t);
-
-    unsigned long ToBGR() const ;
 };
 
 

@@ -5,6 +5,7 @@
 #include <math.h>
 #include "Vector.h"
 #include "Image.h"
+#include "Matrix.h"
 
 #pragma comment(linker, "/subsystem:window /entry:WinMainCRTStartup")
 
@@ -24,16 +25,18 @@ void Start() {
     // }
 
     //Rasterizer::DrawTriangle(Point(100, 100, 73, 14, 104, 255), Point(400, 500, 105, 240, 211, 255), Point(700, 100, 255, 0, 0, 255));
-
+    Image* image = Image::CreateImage("assets/picture/Genshin.png");
+    Rasterizer::SetBlending(true);
+    Rasterizer::DrawImageWithAlpha(image, 100);
     window->UpdateWindowBuffer();
 }
 
 //主循环 逻辑放这里
 void Tick() {
     //首先应该将上一帧绘制内容清空
-    window->Clear();
+    //window->Clear();
 
-    RotateTriangle(0.01f);
+    //RotateTriangle(0.01f);
 
     // 更新窗口显示
     window->UpdateWindowBuffer();
@@ -108,7 +111,7 @@ void SnowflakeNoise() {
     for (int i = 0; i < window->GetWidth(); i++) {
         for (int j = 0; j < window->GetHeight(); j++) {
             int v = std::rand() % 255;
-            window->SetColorsbuff(j, i, RGB(v,v,v));
+            window->DrawPoint(j, i, RGB(v,v,v));
         }
     }
 }

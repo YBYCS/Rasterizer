@@ -15,7 +15,7 @@ Image::Image(int width, int height, Color *color)
 
 Image::~Image()
 {
-    if (color != nullptr)
+    if (color)
         delete[] color;
 }
 
@@ -25,12 +25,19 @@ Image *Image::CreateImage(const std::string &path)
 
     //stbimage读入图片默认原点在左上角，因此需要上下反转
     stbi_set_flip_vertically_on_load(true);
-    //参数为： 1.图片所处路径、2.图片长度、3.图片高度、4.图片类型、5.以RGBA格式读取
+    //参数为： 1.图片所处路径、2.图片长度、3.图片高度、4.图片类型、5.以RGBA格式读取每一个像素的RGBA
     auto* bits = stbi_load(path.c_str(), &width, &height, &type, STBI_rgb_alpha);  
 
     if (bits == nullptr) {
         std::cerr << "Error loading image: " << stbi_failure_reason() << std::endl;
         return nullptr;
+    }   
+
+    //图片默认颜色通道为BGRA，GDI默认颜色通道为RGBA，因此需要将图片中每个像素的 R 和 B交换
+    for (int i = 0; i < width * height * 4; i += 4) {
+        byte temp = bits[i];
+        bits[i] = bits[i + 2];
+        bits[i + 2] = temp;
     }
 
     Image* image = new Image(width, height, (Color*)bits);

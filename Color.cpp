@@ -15,8 +15,3 @@ Color Color::Lerp(const Color &start, const Color &end, float t)
             static_cast<byte>(static_cast<float>(end.a) * t + (1 - t) * static_cast<float>(start.a))
     );
 }
-
-unsigned long Color::ToBGR() const
-{
-    return RGB(b, g, r);    //GDI中默认颜色通道是BGRA
-}

@@ -1,9 +1,11 @@
 #include "WindowController.h"
 #include "main.h"
 #include <iostream>
+#include "Rasterizer.h"
 
 WindowController* WindowController::instance_ = nullptr;
-WindowController* WindowController::getInstance() {
+WindowController* WindowController::getInstance() 
+{
     if (instance_ == nullptr) {
         instance_ = new WindowController(); 
     }
@@ -11,49 +13,43 @@ WindowController* WindowController::getInstance() {
 }
 
 WindowController::WindowController() {}
-WindowController::~WindowController() {
-    DeleteObject(hBitmap_);
-    DeleteDC(memDC_);
-    ReleaseDC(hwnd_, hdc_);
-    for (int y = 0; y < height_; ++y) {
-        delete[] colorsbuff_[y];
-    }
-    delete[] colorsbuff_;
-    delete[] flatArray_;
+WindowController::~WindowController() 
+{
+    if (hBitmap_) DeleteObject(hBitmap_);
+    if (memDC_) DeleteDC(memDC_);
+    if (hdc_) ReleaseDC(hwnd_, hdc_);
+    if (colorBuffer_) delete[] colorBuffer_;
 }
 
-void WindowController::InitializeWindow(HINSTANCE hInstance) {
+void WindowController::InitializeWindow(HINSTANCE hInstance) 
+{
     RegisterWindowClass(hInstance);
     CreateAWindow(hInstance);
 
-    //初始化buff
-    colorsbuff_ = new COLORREF *[height_ + 1];
-    for (int y = 0; y <= height_; ++y) {
-        colorsbuff_[y] = new COLORREF[width_ + 1];
-        for (int x = 0; x <= width_; ++x) {
-            colorsbuff_[y][x] = 0;
-        }
-    }
-    // 初始化 flatArray_
-    flatArray_ = new COLORREF[(width_ + 1) * (height_ + 1)];
+    // 初始化 HDC 和 HBITMAP
+    hdc_ = GetDC(hwnd_);    //获取指定窗口的设备上下文(DC)
+    memDC_ = CreateCompatibleDC(hdc_);  //创建一个与指定设备上下文兼容的内存设备上下文(DC)
 
     // 设置位图信息
-    ZeroMemory(&bmi_, sizeof(bmi_));
-    bmi_.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmi_.bmiHeader.biWidth = width_;
-    bmi_.bmiHeader.biHeight = -height_; // top-down when negative
-    bmi_.bmiHeader.biPlanes = 1;
-    bmi_.bmiHeader.biBitCount = 32;
-    bmi_.bmiHeader.biCompression = BI_RGB;
+    BITMAPINFO bmi;
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = width_;
+    bmi.bmiHeader.biHeight = -height_;
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;  //设置每个像素的位数，这里设置为32位意味着每个像素包含4个字节
+    bmi.bmiHeader.biCompression = BI_RGB;
 
-    // 初始化 HDC 和 HBITMAP
-    hdc_ = GetDC(hwnd_);
-    memDC_ = CreateCompatibleDC(hdc_);
-    hBitmap_ = CreateCompatibleBitmap(hdc_, width_, height_);
+    // CreateDIBSection 会根据bmi指定的位图信息创建并返回一个设备无关的位图，并为其像素数据分配内存
+    //分配的内存地址被设置到 graphicsBuffer_ 指针中，可以通过这个指针直接访问和修改位图的像素数据
+    //其中，DIB_RGB_COLORS表示颜色信息以RGB格式存储
+    hBitmap_ = CreateDIBSection(memDC_, &bmi, DIB_RGB_COLORS, (void**)&graphicsBuffer_, 0, 0);
     SelectObject(memDC_, hBitmap_);
+    memset(graphicsBuffer_, 0, width_ * height_ * 4);   //清空位图像素数据
+    colorBuffer_ = (Color*)graphicsBuffer_;
 }
 
-ATOM WindowController::RegisterWindowClass(HINSTANCE hInstance) {
+ATOM WindowController::RegisterWindowClass(HINSTANCE hInstance) 
+{
     WNDCLASSEXW wc = {};
     wc.cbSize = sizeof(WNDCLASSEX);         //函数会检查 cbSize 的值来确保你传递的结构体是正确的类型和大小。如果 cbSize 的值不正确，这些函数可能会失败，导致窗口类注册不成功。
     wc.style = CS_HREDRAW | CS_VREDRAW;     //设置当水平或垂直大小发生变化时重绘窗口
@@ -64,7 +60,8 @@ ATOM WindowController::RegisterWindowClass(HINSTANCE hInstance) {
     return RegisterClassExW(&wc);
 }
 
-void WindowController::CreateAWindow(HINSTANCE hInstance) {
+void WindowController::CreateAWindow(HINSTANCE hInstance) 
+{
     hInstance_ = hInstance;
 
     long dwStyle = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
@@ -95,12 +92,14 @@ void WindowController::CreateAWindow(HINSTANCE hInstance) {
 }
 
 // 窗口事件回调函数，用于处理窗口接收到的消息
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
+{
     WindowController::getInstance()->HandleMessage(hwnd, uMsg, wParam, lParam);
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-bool WindowController::MyPeekMessage(MSG& msg) {
+bool WindowController::MyPeekMessage(MSG& msg) 
+{
     if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
@@ -108,7 +107,8 @@ bool WindowController::MyPeekMessage(MSG& msg) {
     return alive_;
 }
 
-void WindowController::HandleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+void WindowController::HandleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
+{
     switch (uMsg) {
         case WM_CLOSE:
             DestroyWindow(hwnd);    //此处销毁窗体会自动发出WM_DESTROY
@@ -128,32 +128,35 @@ void WindowController::HandleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
     }
 }
 
-void WindowController::UpdateWindowBuffer() {
+void WindowController::UpdateWindowBuffer() 
+{
     if (!hwnd_)
         return;
 
-    for (int y = 0; y <= height_; ++y) {
-        for (int x = 0; x <= width_; ++x) {
-            flatArray_[(height_ - y ) * width_ + x] = colorsbuff_[y][x];
-        }
-    }
-
-    // 将 flatArray_ 内容复制到位图
-    SetDIBits(memDC_, hBitmap_, 0, height_, flatArray_, &bmi_, DIB_RGB_COLORS);
-    // 将内存设备上下文的内容复制到窗口设备上下文
+    //将内存设备上下文的内容复制到窗口设备上下文
     BitBlt(hdc_, 0, 0, width_, height_, memDC_, 0, 0, SRCCOPY);
 }
 
-void WindowController::SetColorsbuff(int x, int y, unsigned long color) {
-    if (x > width_ || y > height_)
+void WindowController::DrawPoint(int x, int y, Color color) 
+{
+    if (x >= width_ || y >= height_)
         return;
-    colorsbuff_[y][x] = color;
+
+    Color res = color;
+    int index = y * width_ + x;
+    if (Rasterizer::IsBlendingEnabled()) {
+        Color originalColor = colorBuffer_[index];
+        float weight = static_cast<float>(color.a) / 255.0f;
+        
+        res.r = color.r * weight + originalColor.r * (1.0f - weight);
+        res.g = color.g * weight + originalColor.g * (1.0f - weight);
+        res.b = color.b * weight + originalColor.b * (1.0f - weight);
+        res.a = color.a * weight + originalColor.a * (1.0f - weight);
+    }
+    colorBuffer_[index] = res;
 }
 
-void WindowController::Clear() {
-    for (int i = 0; i <= height_; i++) {
-        for (int j = 0; j <= width_; j++) {
-            colorsbuff_[i][j] = 0;
-        }
-    }
+void WindowController::Clear() 
+{
+    std::fill_n(colorBuffer_, width_ * height_, Color(0, 0, 0, 0));
 }
