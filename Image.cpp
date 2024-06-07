@@ -27,7 +27,7 @@ std::unique_ptr<Image> Image::CreateImage(const std::string &path)
         return nullptr;
     }   
 
-    //图片默认颜色通道为BGRA，GDI默认颜色通道为RGBA，因此需要将图片中每个像素的 R 和 B交换
+    //图片默认颜色通道为RGBA，GDI默认颜色通道为BGRA，因此需要将图片中每个像素的 R 和 B交换
     for (int i = 0; i < width * height * 4; i += 4) {
         std::swap(bits[i], bits[i + 2]);
     }

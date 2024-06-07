@@ -9,5 +9,4 @@ class General {
 
 };
 
-
 #endif //RASTERIZER_GENERAL_H

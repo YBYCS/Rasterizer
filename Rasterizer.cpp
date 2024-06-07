@@ -13,15 +13,27 @@ Rasterizer::~Rasterizer()
 }
 
 bool Rasterizer::enableBlending = false;
+bool Rasterizer::enableBilinearSampling = false;
+Image* Rasterizer::texture_ = nullptr;
 
 void Rasterizer::SetBlending(bool enabled)
 {
     enableBlending = enabled;
 }
 
+void Rasterizer::SetBilinearInterpolationEnabled(bool enabled)
+{
+    enableBilinearSampling = enabled;
+}
+
 bool Rasterizer::IsBlendingEnabled()
 {
     return enableBlending;
+}
+
+bool Rasterizer::IsBilinearSamplingEnabled()
+{
+    return enableBilinearSampling;
 }
 
 void Rasterizer::DrawLine(const Point& p1, const Point& p2) {
@@ -83,9 +95,14 @@ void Rasterizer::DrawImageWithAlpha(const Image *image, byte alpha)
     }
 }
 
+void Rasterizer::SetTexture(Image *texture)
+{
+    texture_ = texture;
+}
+
 void Rasterizer::DrawTriangle(const Point& p1, const Point& p2, const Point& p3) {
     float totalArea = GetTriangleArea(p1, p2, p3);
-    //重心插值
+    //颜色重心插值
     auto colorInterpolate = [totalArea](int x, int y, const Point& p1, const Point& p2, const Point& p3) {
         float area1 = GetTriangleArea(Point(x, y), p2, p3);
         float area2 = GetTriangleArea(p1, Point(x, y), p3);
@@ -100,6 +117,17 @@ void Rasterizer::DrawTriangle(const Point& p1, const Point& p2, const Point& p3)
         byte a = alpha * static_cast<float>(p1.color.a) + beta * static_cast<float>(p2.color.a) + gamma * static_cast<float>(p3.color.a);
 
         return Color(r, g, b, a);
+    };
+    //纹理坐标重心插值
+    auto uvInterpolate = [totalArea](int x, int y, const Point& p1, const Point& p2, const Point& p3) {
+        float area1 = GetTriangleArea(Point(x, y), p2, p3);
+        float area2 = GetTriangleArea(p1, Point(x, y), p3);
+        float area3 = GetTriangleArea(p1, p2, Point(x, y));
+        float alpha = area1 / totalArea;
+        float beta = area2 / totalArea;
+        float gamma = area3 / totalArea; 
+
+        return Vector2(p1.uv * alpha + p2.uv * beta + p3.uv * gamma);
     };
 
     Point p[3] = { p1, p2, p3 };
@@ -123,7 +151,8 @@ void Rasterizer::DrawTriangle(const Point& p1, const Point& p2, const Point& p3)
 
         for (int x = x1; x <= x2; ++x) {
             if (x < 0 || x >= window->GetWidth()) continue;
-            Color interpolatedColor = colorInterpolate(x, y, p[0], p[1], p[2]);
+            Vector2 uv = uvInterpolate(x, y, p[0], p[1], p[2]);
+            Color interpolatedColor = texture_ ? (enableBilinearSampling ? SampleTextureBilinear(uv) : SampleTextureNearest(uv)) : colorInterpolate(x, y, p[0], p[1], p[2]);
             window->DrawPoint(x, y, interpolatedColor);
         }
     }
@@ -131,4 +160,33 @@ void Rasterizer::DrawTriangle(const Point& p1, const Point& p2, const Point& p3)
 
 float Rasterizer::GetTriangleArea(const Point& p1, const Point& p2, const Point& p3) {
     return abs((p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)) / 2.0f);
+}
+
+//邻近过滤采样
+Color Rasterizer::SampleTextureNearest(const Vector2 &uv)
+{
+    int x = std::round(uv.x * (texture_->width - 1));
+    int y = std::round(uv.y * (texture_->height - 1));
+    return texture_->colors[y * texture_->width + x];
+}
+
+//双线性插值采样
+Color Rasterizer::SampleTextureBilinear(const Vector2 &uv)
+{
+    float x = uv.x * (texture_->width - 1);
+    float y = uv.y * (texture_->height - 1);
+
+    int left = std::floor(x);
+    int right = std::ceil(x);
+    int top = std::ceil(y);
+    int bottom = std::floor(y);
+
+    float ratioY = top == bottom ? 1.0f : (top - y) / (float)(top - bottom);
+    
+    Color leftColor = Color::Lerp(texture_->colors[top * texture_->width + left], texture_->colors[bottom * texture_->width + left], ratioY);
+    Color rightColor = Color::Lerp(texture_->colors[top * texture_->width + right], texture_->colors[bottom * texture_->width + right], ratioY);
+    
+    float ratioX = left == right ? 1.0f : (x - left) / (float)(right - left);
+
+    return Color::Lerp(leftColor, rightColor, ratioX);
 }
