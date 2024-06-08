@@ -28,7 +28,7 @@ void Start() {
     //Rasterizer::DrawTriangle(Point(100, 100, 73, 14, 104, 255), Point(400, 500, 105, 240, 211, 255), Point(700, 100, 255, 0, 0, 255));
     std::unique_ptr<Image> image = Image::CreateImage("assets/picture/Genshin.png");
     Rasterizer::SetBlending(true);
-    Rasterizer::SetBilinearInterpolationEnabled(true);
+    Rasterizer::SetSamplingMethod(BILINEAR_INTERPOLATION);
     Rasterizer::SetTexture(image.get());
     Point p1(100, 100, Color(255, 0, 0, 0), Vector2(0, 0));
     Point p2(400, 500, Color(0, 255, 0, 0), Vector2(0.5, 1));

@@ -13,7 +13,8 @@ Rasterizer::~Rasterizer()
 }
 
 bool Rasterizer::enableBlending = false;
-bool Rasterizer::enableBilinearSampling = false;
+SamplingMethod Rasterizer::samplingMethod_ = NEAREST_NEIGHBOR;
+TextureWarpMode Rasterizer::textureWarpMode_ = REPEAT;
 Image* Rasterizer::texture_ = nullptr;
 
 void Rasterizer::SetBlending(bool enabled)
@@ -21,9 +22,9 @@ void Rasterizer::SetBlending(bool enabled)
     enableBlending = enabled;
 }
 
-void Rasterizer::SetBilinearInterpolationEnabled(bool enabled)
+void Rasterizer::SetSamplingMethod(SamplingMethod method)
 {
-    enableBilinearSampling = enabled;
+    samplingMethod_ = method;
 }
 
 bool Rasterizer::IsBlendingEnabled()
@@ -31,12 +32,23 @@ bool Rasterizer::IsBlendingEnabled()
     return enableBlending;
 }
 
-bool Rasterizer::IsBilinearSamplingEnabled()
+SamplingMethod Rasterizer::GetSamplingMethod()
 {
-    return enableBilinearSampling;
+    return samplingMethod_;
 }
 
-void Rasterizer::DrawLine(const Point& p1, const Point& p2) {
+void Rasterizer::SetTextureWarpMode(TextureWarpMode mode)
+{
+    textureWarpMode_ = mode;
+}
+
+TextureWarpMode Rasterizer::GetTextureWarpMode()
+{
+    return textureWarpMode_;
+}
+
+void Rasterizer::DrawLine(const Point& p1, const Point& p2) 
+{
     int dx = abs(p2.x - p1.x);   //计算x方向的增量（绝对值）
     int dy = abs(p2.y - p1.y);   //计算y方向的增量（绝对值）
 
@@ -67,7 +79,8 @@ void Rasterizer::DrawLine(const Point& p1, const Point& p2) {
     }
 }
 
-void Rasterizer::DrawTriangleEdge(const Point& p1, const Point& p2, const Point& p3) {
+void Rasterizer::DrawTriangleEdge(const Point& p1, const Point& p2, const Point& p3) 
+{
     // 画三角形的三条边
     DrawLine(p1, p2);
     DrawLine(p2, p3);
@@ -100,7 +113,8 @@ void Rasterizer::SetTexture(Image *texture)
     texture_ = texture;
 }
 
-void Rasterizer::DrawTriangle(const Point& p1, const Point& p2, const Point& p3) {
+void Rasterizer::DrawTriangle(const Point& p1, const Point& p2, const Point& p3) 
+{
     float totalArea = GetTriangleArea(p1, p2, p3);
     //颜色重心插值
     auto colorInterpolate = [totalArea](int x, int y, const Point& p1, const Point& p2, const Point& p3) {
@@ -152,29 +166,50 @@ void Rasterizer::DrawTriangle(const Point& p1, const Point& p2, const Point& p3)
         for (int x = x1; x <= x2; ++x) {
             if (x < 0 || x >= window->GetWidth()) continue;
             Vector2 uv = uvInterpolate(x, y, p[0], p[1], p[2]);
-            Color interpolatedColor = texture_ ? (enableBilinearSampling ? SampleTextureBilinear(uv) : SampleTextureNearest(uv)) : colorInterpolate(x, y, p[0], p[1], p[2]);
+            Color interpolatedColor;
+            if (texture_) {
+                switch (samplingMethod_)
+                {
+                case NEAREST_NEIGHBOR:
+                    interpolatedColor = SampleTextureNearest(uv);
+                    break;
+                case BILINEAR_INTERPOLATION:
+                    interpolatedColor = SampleTextureBilinear(uv);
+                    break;
+                default:
+                    interpolatedColor = SampleTextureNearest(uv);
+                    break;
+                }
+            } else {
+                interpolatedColor = colorInterpolate(x, y, p[0], p[1], p[2]);
+            }
             window->DrawPoint(x, y, interpolatedColor);
         }
     }
 }
 
-float Rasterizer::GetTriangleArea(const Point& p1, const Point& p2, const Point& p3) {
+float Rasterizer::GetTriangleArea(const Point& p1, const Point& p2, const Point& p3) 
+{
     return abs((p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)) / 2.0f);
 }
 
 //邻近过滤采样
 Color Rasterizer::SampleTextureNearest(const Vector2 &uv)
 {
-    int x = std::round(uv.x * (texture_->width - 1));
-    int y = std::round(uv.y * (texture_->height - 1));
+    auto tempUV = uv;
+    WarpUV(tempUV);
+    int x = std::round(tempUV.x * (texture_->width - 1));
+    int y = std::round(tempUV.y * (texture_->height - 1));
     return texture_->colors[y * texture_->width + x];
 }
 
 //双线性插值采样
 Color Rasterizer::SampleTextureBilinear(const Vector2 &uv)
 {
-    float x = uv.x * (texture_->width - 1);
-    float y = uv.y * (texture_->height - 1);
+    auto tempUV = uv;
+    WarpUV(tempUV);
+    float x = tempUV.x * (texture_->width - 1);
+    float y = tempUV.y * (texture_->height - 1);
 
     int left = std::floor(x);
     int right = std::ceil(x);
@@ -190,3 +225,35 @@ Color Rasterizer::SampleTextureBilinear(const Vector2 &uv)
 
     return Color::Lerp(leftColor, rightColor, ratioX);
 }
+
+void Warp(float &x) 
+{
+    if (Rasterizer::GetTextureWarpMode() == CLAMP) {
+        if (x > 1.0f)
+            x = 1.0f;
+        else if (x < 0.0f)
+            x = 0.0f;
+        return;
+    }
+    
+    if (x > 1.0f || x < 0.0f) {
+        x = x - (int)x;
+        switch(Rasterizer::GetTextureWarpMode()) 
+        {
+        case REPEAT:
+            x = (1 + x) - (int)(1 + x);
+            break;
+        case MIRRORED_REPEAT:
+            x = 1.0f - ((1 + x) - (int)(1 + x));
+            break;
+        default:
+            break;
+        }
+    }
+}
+void Rasterizer::WarpUV(Vector2 &uv)
+{
+    Warp(uv.x);
+    Warp(uv.y);
+}
+
