@@ -197,7 +197,7 @@ float Rasterizer::GetTriangleArea(const Point& p1, const Point& p2, const Point&
 Color Rasterizer::SampleTextureNearest(const Vector2 &uv)
 {
     auto tempUV = uv;
-    WarpUV(tempUV);
+    WrapUV(tempUV);
     int x = std::round(tempUV.x * (texture_->width - 1));
     int y = std::round(tempUV.y * (texture_->height - 1));
     return texture_->colors[y * texture_->width + x];
@@ -207,7 +207,7 @@ Color Rasterizer::SampleTextureNearest(const Vector2 &uv)
 Color Rasterizer::SampleTextureBilinear(const Vector2 &uv)
 {
     auto tempUV = uv;
-    WarpUV(tempUV);
+    WrapUV(tempUV);
     float x = tempUV.x * (texture_->width - 1);
     float y = tempUV.y * (texture_->height - 1);
 
@@ -235,7 +235,7 @@ void Warp(float &x)
             x = 0.0f;
         return;
     }
-    
+
     if (x > 1.0f || x < 0.0f) {
         x = x - (int)x;
         switch(Rasterizer::GetTextureWarpMode()) 
@@ -251,9 +251,8 @@ void Warp(float &x)
         }
     }
 }
-void Rasterizer::WarpUV(Vector2 &uv)
+void Rasterizer::WrapUV(Vector2 &uv)
 {
     Warp(uv.x);
     Warp(uv.y);
 }
-

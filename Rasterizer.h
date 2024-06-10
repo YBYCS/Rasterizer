@@ -28,7 +28,7 @@ private:
     static float GetTriangleArea(const Point &p1, const Point &p2, const Point &p3);
     static Color SampleTextureNearest(const Vector2 &uv);
     static Color SampleTextureBilinear(const Vector2 &uv);
-    static void WarpUV(Vector2& uv);
+    static void WrapUV(Vector2& uv);
 public:
     static void SetBlending(bool enabled);
     static bool IsBlendingEnabled();

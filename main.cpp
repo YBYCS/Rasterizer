@@ -7,33 +7,11 @@
 #include "Image.h"
 #include "Matrix.h"
 #include <memory>
+#include "GPU.h"
 
 #pragma comment(linker, "/subsystem:window /entry:WinMainCRTStartup")
 
-
 void Start() {
-    // Model model;
-    // if (!Model::LoadOBJ("obj/boggie/body.obj", model)) {
-    //     std::cout << "打开文件失败" << std::endl;
-    // }
-    // // 成功加载模型
-    // for (int i = 0; i < model.faces.size(); ++i) {
-    //     auto face = model.faces[i];
-    //     auto p1 = Rasterizer::project(model.vertices[face.vertexIndices[0]]);
-    //     auto p2 = Rasterizer::project(model.vertices[face.vertexIndices[1]]);
-    //     auto p3 = Rasterizer::project(model.vertices[face.vertexIndices[2]]);
-    //     Rasterizer::DrawTriangleEdge(p1, p2, p3);
-    // }
-
-    //Rasterizer::DrawTriangle(Point(100, 100, 73, 14, 104, 255), Point(400, 500, 105, 240, 211, 255), Point(700, 100, 255, 0, 0, 255));
-    std::unique_ptr<Image> image = Image::CreateImage("assets/picture/Genshin.png");
-    Rasterizer::SetBlending(true);
-    Rasterizer::SetSamplingMethod(BILINEAR_INTERPOLATION);
-    Rasterizer::SetTexture(image.get());
-    Point p1(100, 100, Color(255, 0, 0, 0), Vector2(0, 0));
-    Point p2(400, 500, Color(0, 255, 0, 0), Vector2(0.5, 1));
-    Point p3(700, 100, Color(0, 0, 255, 0), Vector2(1, 0));
-    Rasterizer::DrawTriangle(p1, p2, p3);
     window->UpdateWindowBuffer();
 }
 

@@ -4,7 +4,6 @@
 
 #include "Color.h"
 #include <wingdi.h>
-#include <windows.h>
 
 Color Color::Lerp(const Color &start, const Color &end, float t)
 {
