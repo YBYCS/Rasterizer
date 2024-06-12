@@ -7,18 +7,46 @@
 #include "Image.h"
 #include "Matrix.h"
 #include <memory>
-#include "GPU.h"
+#include "Render.h"
+#include "Simpleshader.h"
 
 #pragma comment(linker, "/subsystem:window /entry:WinMainCRTStartup")
 
+Matrix4 modelMatrix;
+Matrix4 viewMatrix;
+Matrix4 perspectiveMatrix;
+
 void Start() {
+    //计算MVP矩阵
+    perspectiveMatrix = Perspective(60.0f, 0.1f, 100.0f);
+    //模拟相机位置
+    auto cameraModelMatrix = Translate(Matrix4(1.0f), Vector3(0.0f, 0.0f, 2.0f));
+    viewMatrix = Inverse(cameraModelMatrix);
+    modelMatrix = Matrix4();
+    //设置应用哪一个shader
+    Simpleshader *shader = new Simpleshader();
+    shader->SetModelMatrix(modelMatrix);
+    shader->SetViewMatrix(viewMatrix);
+    shader->SetProjectMatrix(perspectiveMatrix);
+    Render::SetShader(shader);
+    //读取模型
+    Model model;
+    if(!Model::LoadOBJ("assets/obj/african_head/african_head.obj", model)) {
+        std::cout << "fuck";
+        return;
+    }
+    //读取纹理
+    std::unique_ptr<Image> textureImage = Image::CreateImage("assets/obj/african_head/african_head_diffuse.tga");
+    Render::RenderModel(model, textureImage.get());
     window->UpdateWindowBuffer();
+    delete shader;
 }
 
 //主循环 逻辑放这里
 void Tick() {
     //首先应该将上一帧绘制内容清空
     //window->Clear();
+    
 
     //RotateTriangle(0.01f);
 
@@ -44,51 +72,39 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     return 0;
 }
 
-float angle = 0.0f;
-float cameraPos = 5.0f;
+// void RotateTriangle(float amplitude) {
+//     angle += amplitude;
+//     cameraPos -= 0.01f;
+//     //MVP变换和屏幕空间变换矩阵
+//     Matrix4 modelMatix, viewMatrix, perspectiveMatrix, screenMatrix;
+//     modelMatix = RotateMartix(Matrix4(), Vector3(0, 1, 0), angle);
+//     perspectiveMatrix = Perspective(60.0f, 0.1f, 100.0f);
+//     Matrix4 cameraMatrix = Translate(Matrix4(), Vector3(0, 0, cameraPos));
+//     viewMatrix = Inverse(cameraMatrix);
+//     screenMatrix = ScreenMatrix();
 
-Point p1(0, 0, 255, 0, 0, 255);
-Point p2(0, 0, 0, 255, 0, 255);
-Point p3(0, 0, 0, 0, 255, 255);
+//     //应用MVP变换
+//     auto sp1 = perspectiveMatrix * viewMatrix * modelMatix * pos1;
+//     auto sp2 = perspectiveMatrix * viewMatrix * modelMatix * pos2;
+//     auto sp3 = perspectiveMatrix * viewMatrix * modelMatix * pos3;
 
-//三角形在世界空间下的坐标
-Vector4 pos1(-1, -1, 0, 1);
-Vector4 pos2(1, -1, 0, 1);
-Vector4 pos3(0, 1, 0, 1);
+//     sp1 /= sp1.w;
+//     sp2 /= sp2.w;
+//     sp3 /= sp3.w;
 
-void RotateTriangle(float amplitude) {
-    angle += amplitude;
-    cameraPos -= 0.01f;
-    //MVP变换和屏幕空间变换矩阵
-    Matrix4 modelMatix, viewMatrix, perspectiveMatrix, screenMatrix;
-    modelMatix = RotateMartix(Matrix4(), Vector3(0, 1, 0), angle);
-    perspectiveMatrix = Perspective(60.0f, 0.1f, 100.0f);
-    Matrix4 cameraMatrix = Translate(Matrix4(), Vector3(0, 0, cameraPos));
-    viewMatrix = Inverse(cameraMatrix);
-    screenMatrix = ScreenMatrix();
+//     sp1 = screenMatrix * sp1;
+//     sp2 = screenMatrix * sp2;
+//     sp3 = screenMatrix * sp3;
 
-    //应用MVP变换
-    auto sp1 = perspectiveMatrix * viewMatrix * modelMatix * pos1;
-    auto sp2 = perspectiveMatrix * viewMatrix * modelMatix * pos2;
-    auto sp3 = perspectiveMatrix * viewMatrix * modelMatix * pos3;
+//     p1.x = sp1.x;
+//     p1.y = sp1.y;
+//     p2.x = sp2.x;
+//     p2.y = sp2.y;
+//     p3.x = sp3.x;
+//     p3.y = sp3.y;
 
-    sp1 /= sp1.w;
-    sp2 /= sp2.w;
-    sp3 /= sp3.w;
-
-    sp1 = screenMatrix * sp1;
-    sp2 = screenMatrix * sp2;
-    sp3 = screenMatrix * sp3;
-
-    p1.x = sp1.x;
-    p1.y = sp1.y;
-    p2.x = sp2.x;
-    p2.y = sp2.y;
-    p3.x = sp3.x;
-    p3.y = sp3.y;
-
-    Rasterizer::DrawTriangle(p1, p2, p3);
-}
+//     Rasterizer::DrawTriangle(p1, p2, p3);
+// }
 
 //屏幕雪花噪点效果
 void SnowflakeNoise() {
@@ -97,18 +113,6 @@ void SnowflakeNoise() {
             int v = std::rand() % 255;
             window->DrawPoint(j, i, RGB(v,v,v));
         }
-    }
-}
-
-void DrawLineEffect() {
-    int r = 150;
-    Point c { 400, 300, Color(255, 0, 0, 255) };
-    for (float i = 0; i < 360; i++) {
-        float radian = i * 3.14159265358979323846264338f / 180.0f;
-        int x = r * sin(radian) + c.x;
-        int y = r * cos(radian) + c.y;
-        Point p { x, y, Color(rand() % 255, rand() % 255, rand() % 255) };
-        Rasterizer::DrawLine(c, p);
     }
 }
 

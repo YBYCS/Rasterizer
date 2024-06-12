@@ -1,7 +1,7 @@
 #include "WindowController.h"
 #include "main.h"
 #include <iostream>
-#include "Rasterizer.h"
+#include "Render.h"
 
 WindowController* WindowController::instance_ = nullptr;
 WindowController* WindowController::getInstance() 
@@ -46,6 +46,8 @@ void WindowController::InitializeWindow(HINSTANCE hInstance)
     SelectObject(memDC_, hBitmap_);
     memset(graphicsBuffer_, 0, width_ * height_ * 4);   //清空位图像素数据
     colorBuffer_ = (Color*)graphicsBuffer_;
+    //初始化深度图
+    Render::InitializeDepthMap();
 }
 
 ATOM WindowController::RegisterWindowClass(HINSTANCE hInstance) 
@@ -142,7 +144,7 @@ void WindowController::DrawPoint(int x, int y, Color color)
 
     Color res = color;
     int index = y * width_ + x;
-    if (Rasterizer::IsBlendingEnabled()) {
+    if (Render::IsBlendingEnabled()) {
         Color originalColor = colorBuffer_[index];
         float weight = static_cast<float>(color.a) / 255.0f;
         

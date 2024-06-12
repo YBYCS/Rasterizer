@@ -7,5 +7,4 @@
 // 函数声明
 void Tick();
 void SnowflakeNoise();
-void DrawLineEffect();
-void RotateTriangle(float amplitude);
+//void RotateTriangle(float amplitude);

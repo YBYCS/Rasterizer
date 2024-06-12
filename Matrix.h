@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Vector.h"
 #include "WindowController.h"
 class Matrix4;
