@@ -5,6 +5,7 @@
 #include "General.h"
 #include "Matrix.h"
 #include "Image.h"
+#include "Rasterizer.h"
 
 class Render {
 private:
@@ -22,6 +23,12 @@ private:
     static bool DepthTest(const FragmentShaderOutput &output);
     //背面剔除
     static bool BackfaceCulling(const VertexData &v0, const VertexData &v1, const VertexData &v2);
+    //耳剪法，将多边形拆分成三角形
+    static void EarClipping(std::vector<VertexData> &res, const Model &model, const Face& targetFace);
+    //在剪裁空间下进行一系列剪裁操作
+    static void ClipInClipSpace(const DrawMode &drawMode, const std::vector<VertexData> &input, std::vector<VertexData> &output);
+    //剪裁算法
+    static void Sutherland_Hodgman(const DrawMode &drawMode, const std::vector<VertexData> &input, std::vector<VertexData> &output);
 public:
     static void SetBlending(bool enabled);
     static bool IsBlendingEnabled();

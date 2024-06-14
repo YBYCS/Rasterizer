@@ -45,11 +45,19 @@ bool Model::LoadOBJ(const std::string &filename, Model &model)
                 std::getline(vertexStream, normalIndex, '/');
 
                 face.vertexIndices.push_back(std::stoi(vertexIndex) - 1);
+                
                 if (!uvIndex.empty()) {
                     face.uvIndices.push_back(std::stoi(uvIndex) - 1);
+                } else {
+                    std::cerr << "The model has no texture coordinates";
+                    return false;
                 }
+
                 if (!normalIndex.empty()) {
                     face.normalIndices.push_back(std::stoi(normalIndex) - 1);
+                } else {
+                    std::cerr << "The model has no normals";;
+                    return false;
                 }
             }
             model.faces.push_back(face);

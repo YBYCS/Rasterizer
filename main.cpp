@@ -46,9 +46,6 @@ void Start() {
 void Tick() {
     //首先应该将上一帧绘制内容清空
     //window->Clear();
-    
-
-    //RotateTriangle(0.01f);
 
     // 更新窗口显示
     window->UpdateWindowBuffer();
