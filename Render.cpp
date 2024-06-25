@@ -262,6 +262,7 @@ void Render:: Sutherland_Hodgman(const DrawMode &drawMode, const std::vector<Ver
         res.position = currentPoint.position * (1 - weight) + nextPoint.position * weight;
         res.color = currentPoint.color * (1 - weight) + nextPoint.color * weight;
         res.texCoord = currentPoint.texCoord * (1 - weight) + nextPoint.texCoord * weight;
+        res.normal = currentPoint.normal * (1 - weight) + nextPoint.normal * weight;
         res.oneOverW = currentPoint.oneOverW * (1 - weight) + nextPoint.oneOverW * weight;
 
         return res;
@@ -435,6 +436,6 @@ void Render::RenderModel(const Model &model, Image *textureImage)
         //深度测试
         if (!DepthTest(fsOutput)) 
             continue;
-        window->DrawPoint(fsOutput.position.x, fsOutput.position.y, BlendColor(fsOutput));
+        window->DrawPoint(fsOutput.position.x, fsOutput.position.y, enableBlending_ ? BlendColor(fsOutput) : fsOutput.color);
     }
 }

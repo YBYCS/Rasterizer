@@ -7,6 +7,7 @@
 #include <cstdint>
 #include "Vector.h"
 #include "Color.h"
+#include <algorithm>
 
 //顶点的数据结构
 struct VertexData {
@@ -33,7 +34,14 @@ struct FragmentShaderOutput {
 // 将 Color 转换为 Vector4
 inline Vector4 ColorToVector4(const Color& color) { return Vector4(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f); };
 // 将 Vector4 转换为 Color
-inline Color Vector4ToColor(const Vector4& v) { return Color(v.x * 255.0f, v.y * 255.0f, v.z * 255.0f, v.w * 255.0f); };
+inline Color Vector4ToColor(const Vector4& v) { 
+    //防止颜色越界
+    Vector4 res = v;
+    res.x = std::clamp(res.x, 0.0f, 1.0f);
+    res.y = std::clamp(res.y, 0.0f, 1.0f);
+    res.z = std::clamp(res.z, 0.0f, 1.0f);
+    res.w = std::clamp(res.w, 0.0f, 1.0f);
+    return Color(res.x * 255.0f, res.y * 255.0f, res.z * 255.0f, res.w * 255.0f); };
 
 class General {
 

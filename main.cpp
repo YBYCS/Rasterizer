@@ -9,6 +9,7 @@
 #include <memory>
 #include "Render.h"
 #include "Simpleshader.h"
+#include "HalfLambertShader.h"
 
 #pragma comment(linker, "/subsystem:window /entry:WinMainCRTStartup")
 
@@ -24,11 +25,17 @@ void Start() {
     viewMatrix = Inverse(cameraModelMatrix);
     modelMatrix = Matrix4();
     //设置应用哪一个shader
-    Simpleshader *shader = new Simpleshader();
+    HalfLambertShader *shader = new HalfLambertShader();
     shader->SetModelMatrix(modelMatrix);
     shader->SetViewMatrix(viewMatrix);
     shader->SetProjectMatrix(perspectiveMatrix);
     Render::SetShader(shader);
+    shader->ambientLight.color = Vector3(1.0f, 1.0f, 1.0f);
+    shader->ambientLight.intensity = 0.1f;
+    shader->directionalLight.color = Vector3(1.0f, 1.0f, 1.0f);
+    shader->directionalLight.direction = Vector3(-1.0f, -0.3f, -0.7f);
+    shader->directionalLight.intensity = 1.4f;
+
     //读取模型
     Model model;
     if(!Model::LoadOBJ("assets/obj/african_head/african_head.obj", model)) {
