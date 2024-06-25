@@ -20,6 +20,7 @@ public:
     bool MyPeekMessage(MSG& msg);
     void UpdateWindowBuffer();
     void DrawPoint(int x, int y, Color color);
+    Color GetColor(int x, int y);
     void Clear();
     int GetWidth() { return width_; };
     int GetHeight() { return height_; };

@@ -19,7 +19,9 @@ VertexData Render::VertexShader(const Vector3 &position, const Color &color, con
     return curShader_->VertexShader(vertex);
 }
 
-void trim(VertexData &vertexData) {
+/// @brief 剔除NDC空间下x、y、z的值小于0或大于1的点
+/// @param vertexData 
+void Trim(VertexData &vertexData) {
     if (vertexData.position.x < -1.0f) {
         vertexData.position.x = -1.0f;
     }
@@ -56,7 +58,8 @@ void Render::PerspectiveDivision(std::vector<VertexData> &output)
         vertexData.normal *= vertexData.oneOverW;
         vertexData.texCoord *= vertexData.oneOverW;
 
-        trim(vertexData);
+        //透视除法完毕后，需要确保所有的物体都落在 -1到1的NDC空间下
+        Trim(vertexData);
     }
 }
 
@@ -323,6 +326,24 @@ void Render:: Sutherland_Hodgman(const DrawMode &drawMode, const std::vector<Ver
     }
 }
 
+/// @brief 颜色混合
+/// @param output 
+/// @return 
+Color Render::BlendColor(const FragmentShaderOutput &output)
+{
+    Color res;
+    Color preColor = window->GetColor(output.position.x, output.position.y);
+    Color curColor = output.color;
+
+    float weight = (float)curColor.a / 255.0f;
+    res.r = (float)curColor.r * weight + (float)preColor.r * (1.0f - weight);
+    res.g = (float)curColor.g * weight + (float)preColor.g * (1.0f - weight);
+    res.b = (float)curColor.b * weight + (float)preColor.b * (1.0f - weight);
+    res.a = (float)curColor.a * weight + (float)preColor.a * (1.0f - weight);
+
+    return res;
+}
+
 void Render::SetBlending(bool enabled)
 {
     enableBlending_ = enabled;
@@ -414,6 +435,6 @@ void Render::RenderModel(const Model &model, Image *textureImage)
         //深度测试
         if (!DepthTest(fsOutput)) 
             continue;
-        window->DrawPoint(fsOutput.position.x, fsOutput.position.y, fsOutput.color);
+        window->DrawPoint(fsOutput.position.x, fsOutput.position.y, BlendColor(fsOutput));
     }
 }

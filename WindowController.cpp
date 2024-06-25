@@ -156,6 +156,16 @@ void WindowController::DrawPoint(int x, int y, Color color)
     colorBuffer_[index] = res;
 }
 
+/// @brief 得到当前窗口指定位置的颜色
+/// @param x 
+/// @param y 
+/// @return 
+Color WindowController::GetColor(int x, int y)
+{
+    if (x == width_ || y == height_) return Color();
+    return colorBuffer_[y * width_ + x];
+}
+
 void WindowController::Clear() 
 {
     std::fill_n(colorBuffer_, width_ * height_, Color(0, 0, 0, 0));

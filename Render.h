@@ -31,6 +31,7 @@ private:
     static void ClipInClipSpace(const DrawMode &drawMode, const std::vector<VertexData> &input, std::vector<VertexData> &output);
     //剪裁算法
     static void Sutherland_Hodgman(const DrawMode &drawMode, const std::vector<VertexData> &input, std::vector<VertexData> &output);
+    static Color BlendColor(const FragmentShaderOutput &output);
 public:
     static void SetBlending(bool enabled);
     static bool IsBlendingEnabled();
