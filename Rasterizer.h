@@ -44,7 +44,8 @@ public:
     static SamplingMethod GetSamplingMethod();
     static void SetTextureWarpMode(TextureWarpMode mode);
     static TextureWarpMode GetTextureWarpMode();
-    
+    //从纹理中采样颜色
+    static Color Sampling(Vector2 texCoord, const Image *texture);
     static void DrawImage(const Image* image);
     static void DrawImageWithAlpha(const Image* image, byte alpha);
 

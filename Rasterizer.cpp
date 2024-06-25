@@ -36,6 +36,24 @@ TextureWarpMode Rasterizer::GetTextureWarpMode()
     return textureWarpMode_;
 }
 
+Color Rasterizer::Sampling(Vector2 texCoord, const Image *texture)
+{
+    Color res;
+    switch (samplingMethod_)
+    {
+    case SamplingMethod::NEAREST_NEIGHBOR:
+        res = SampleTextureNearest(texCoord, texture);
+        break;
+    case SamplingMethod::BILINEAR_INTERPOLATION:
+        res = SampleTextureBilinear(texCoord, texture);
+        break;
+    default:
+        res = SampleTextureNearest(texCoord, texture);
+        break;
+    }
+    return res;
+}
+
 void Rasterizer::DrawImage(const Image *image)
 {
     for (int i = 0; i < image->width; i++) {
@@ -184,10 +202,14 @@ void Rasterizer::RasterizeTriangle(std::vector<VertexData> &output, const Vertex
     int maxY = static_cast<int>(std::max(v0.position.y, std::max(v1.position.y, v2.position.y)));
     int minY = static_cast<int>(std::min(v0.position.y, std::min(v1.position.y, v2.position.y)));
 
-    float totalArea = GetTriangleArea(v0.position, v1.position, v2.position);
+    //改用了更加精确的求三角形面积公式
+    auto e1 = Vector2(v1.position.x - v0.position.x, v1.position.y - v0.position.y);
+    auto e2 = Vector2(v2.position.x - v0.position.x, v2.position.y - v0.position.y);
+    float totalArea = std::abs(Cross(e1, e2));
 
     Vector2 pv0, pv1, pv2;
     VertexData currentVertex;
+    
     for (int x = minX; x <= maxX; ++x) {
         for (int y = minY; y <= maxY; ++y) {
             pv0 = Vector2(v0.position.x - x, v0.position.y - y);
@@ -206,28 +228,18 @@ void Rasterizer::RasterizeTriangle(std::vector<VertexData> &output, const Vertex
                 currentVertex.position.y = y;
                 
                 //颜色，法线，纹理均采样重心插值
-                float alpha = GetTriangleArea(Vector2(x, y), v1.position, v2.position) / totalArea;
-                float beta = GetTriangleArea(v0.position, Vector2(x, y), v2.position) / totalArea;
-                float gamma = GetTriangleArea(v0.position, v1.position, Vector2(x, y)) / totalArea;
+                float alpha = std::abs(Cross(pv1, pv2)) / totalArea;
+                float beta = std::abs(Cross(pv0, pv2)) / totalArea;
+                float gamma = std::abs(Cross(pv0, pv1)) / totalArea;
+                
+                //插值1/w，用于透视恢复
+                currentVertex.oneOverW = alpha * v0.oneOverW + beta * v1.oneOverW + gamma * v2.oneOverW;
+                //插值深度值
+                currentVertex.position.z = alpha * v0.position.z + beta * v1.position.z + gamma * v2.position.z;            
                 //插值纹理
                 currentVertex.texCoord = alpha * v0.texCoord + beta * v1.texCoord + gamma * v2.texCoord;
                 //插值颜色
-                if (texture) {
-                    switch (samplingMethod_)
-                    {
-                    case SamplingMethod::NEAREST_NEIGHBOR:
-                        currentVertex.color = ColorToVector4(SampleTextureNearest(currentVertex.texCoord, texture));
-                        break;
-                    case SamplingMethod::BILINEAR_INTERPOLATION:
-                        currentVertex.color = ColorToVector4(SampleTextureBilinear(currentVertex.texCoord, texture));
-                        break;
-                    default:
-                        currentVertex.color = ColorToVector4(SampleTextureNearest(currentVertex.texCoord, texture));
-                        break;
-                    }
-                } else {
-                    currentVertex.color = alpha * v0.color + beta * v1.color + gamma * v2.color;
-                } 
+                currentVertex.color = alpha * v0.color + beta * v1.color + gamma * v2.color;
                 //插值法线
                 currentVertex.normal = alpha * v0.normal + beta * v1.normal + gamma * v2.normal;
 

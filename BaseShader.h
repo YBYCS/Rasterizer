@@ -3,6 +3,7 @@
 #include "General.h"
 #include "Point.h"
 #include "Matrix.h"
+#include "Image.h"
 
 class BaseShader {
 protected:
@@ -14,7 +15,7 @@ public:
     virtual ~BaseShader() = default;
 
     virtual VertexData VertexShader(const VertexData& input) = 0;
-    virtual bool FragmentShader(const VertexData& input, FragmentShaderOutput &output) = 0;
+    virtual bool FragmentShader(const VertexData& input, FragmentShaderOutput &output, const Image *texture = nullptr) = 0;
 
     virtual void SetModelMatrix(const Matrix4 &modelMatrix);
     virtual void SetViewMatrix(const Matrix4 &viewMatrix);

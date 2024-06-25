@@ -11,10 +11,14 @@ VertexData Simpleshader::VertexShader(const VertexData &input)
     return VertexData(curPosition, input.color, Vector3(curNormal.x, curNormal.y, curNormal.z), input.texCoord);
 }
 
-bool Simpleshader::FragmentShader(const VertexData &input, FragmentShaderOutput &output)
+bool Simpleshader::FragmentShader(const VertexData &input, FragmentShaderOutput &output, const Image *image)
 {
-    output.position = Vector2(input.position.x, input.position.y);
+    output.position = Vector2((int)input.position.x, (int)input.position.y);
     output.depth = input.position.z;
-    output.color = Vector4ToColor(input.color);
+    if (image) {
+        output.color = Rasterizer::Sampling(input.texCoord, image);
+    } else {
+        output.color = Vector4ToColor(input.color);
+    }
     return true;
 }

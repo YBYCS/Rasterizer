@@ -16,6 +16,11 @@ bool Model::LoadOBJ(const std::string &filename, Model &model)
         return false;
     }
 
+    model.vertices.clear();
+    model.uvs.clear();
+    model.vertices.clear();
+    model.faces.clear();
+    
     std::string line;
     while (std::getline(file, line)) {
         std::istringstream lineStream(line);
@@ -23,17 +28,18 @@ bool Model::LoadOBJ(const std::string &filename, Model &model)
         lineStream >> prefix;
 
         if (prefix == "v") {
+            //TODO:有些模型v有六个数字
             Vector3 vertex;
             lineStream >> vertex.x >> vertex.y >> vertex.z;
-            model.vertices.push_back(vertex);
+            model.vertices.emplace_back(vertex);
         } else if (prefix == "vt") {
             Vector2 uv;
             lineStream >> uv.x >> uv.y;
-            model.uvs.push_back(uv);
+            model.uvs.emplace_back(uv);
         } else if (prefix == "vn") {
             Vector3 normal;
             lineStream >> normal.x >> normal.y >> normal.z;
-            model.normals.push_back(normal);
+            model.normals.emplace_back(normal);
         } else if (prefix == "f") {
             Face face;
             std::string vertexData;
@@ -44,26 +50,29 @@ bool Model::LoadOBJ(const std::string &filename, Model &model)
                 std::getline(vertexStream, uvIndex, '/');
                 std::getline(vertexStream, normalIndex, '/');
 
-                face.vertexIndices.push_back(std::stoi(vertexIndex) - 1);
+                face.vertexIndices.emplace_back(std::stoi(vertexIndex) - 1);
                 
                 if (!uvIndex.empty()) {
-                    face.uvIndices.push_back(std::stoi(uvIndex) - 1);
+                    face.uvIndices.emplace_back(std::stoi(uvIndex) - 1);
                 } else {
                     std::cerr << "The model has no texture coordinates";
                     return false;
                 }
 
                 if (!normalIndex.empty()) {
-                    face.normalIndices.push_back(std::stoi(normalIndex) - 1);
+                    face.normalIndices.emplace_back(std::stoi(normalIndex) - 1);
                 } else {
                     std::cerr << "The model has no normals";;
                     return false;
                 }
             }
-            model.faces.push_back(face);
+            model.faces.emplace_back(face);
         }
     }
 
     file.close();
+    // for (int i = 0; i < model.vertices.size(); i++) {
+    //     std::cout << model.vertices[i].x << "," << model.vertices[i].y << "," << model.vertices[i].z <<std::endl;
+    // }
     return true;
 }

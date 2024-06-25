@@ -2,6 +2,7 @@
 
 #include "BaseShader.h"
 #include "Matrix.h"
+#include "Rasterizer.h"
 
 //此简易shader只应用MVP变换，不应用光照
 class Simpleshader : public BaseShader {
@@ -10,5 +11,5 @@ public:
     virtual ~Simpleshader() = default;
 
     VertexData VertexShader(const VertexData &input) override;
-    bool FragmentShader(const VertexData& input, FragmentShaderOutput &output) override;  
+    bool FragmentShader(const VertexData& input, FragmentShaderOutput &output, const Image *image = nullptr) override;  
 };

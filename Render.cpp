@@ -19,11 +19,54 @@ VertexData Render::VertexShader(const Vector3 &position, const Color &color, con
     return curShader_->VertexShader(vertex);
 }
 
+void trim(VertexData &vertexData) {
+    if (vertexData.position.x < -1.0f) {
+        vertexData.position.x = -1.0f;
+    }
+
+    if (vertexData.position.x > 1.0f) {
+        vertexData.position.x = 1.0f;
+    }
+
+    if (vertexData.position.y < -1.0f) {
+        vertexData.position.y = -1.0f;
+    }
+
+    if (vertexData.position.y > 1.0f) {
+        vertexData.position.y = 1.0f;
+    }
+
+    if (vertexData.position.z < -1.0f) {
+        vertexData.position.z = -1.0f;
+    }
+
+    if (vertexData.position.z > 1.0f) {
+        vertexData.position.z = 1.0f;
+    }
+}
 void Render::PerspectiveDivision(std::vector<VertexData> &output)
 {
+    //不仅要对position除以Position.w，对所有需要插值的属性都要除以Position.w以应用透视修正
+    //这个Position.w要记录下来，用于透视恢复
     for (auto &vertexData : output) {
-        vertexData.position *= 1.0f / vertexData.position.w;
-        vertexData.position.w = 1.0f;
+        vertexData.oneOverW = 1.0f / vertexData.position.w;
+        vertexData.position *= vertexData.oneOverW;
+        vertexData.position.w = 1.0f;   //Position.w要恢复为1
+        vertexData.color *= vertexData.oneOverW;
+        vertexData.normal *= vertexData.oneOverW;
+        vertexData.texCoord *= vertexData.oneOverW;
+
+        trim(vertexData);
+    }
+}
+
+void Render::PerspectiveCorrection(std::vector<VertexData> &output)
+{
+    //恢复顶点数据
+    for (auto &vertexData : output) {
+        vertexData.color /= vertexData.oneOverW;
+        vertexData.texCoord /= vertexData.oneOverW;
+        vertexData.normal /= vertexData.oneOverW;
     }
 }
 
@@ -196,7 +239,7 @@ void Render::ClipInClipSpace(const DrawMode &drawMode, const std::vector<VertexD
     }
 }
 
-void Render::Sutherland_Hodgman(const DrawMode &drawMode, const std::vector<VertexData> &input, std::vector<VertexData> &output)
+void Render:: Sutherland_Hodgman(const DrawMode &drawMode, const std::vector<VertexData> &input, std::vector<VertexData> &output)
 {
     // Sutherland_Hodgman 裁剪算法在注释里三言两语讲不清除，可以去飞书看看具体原理
 
@@ -216,6 +259,7 @@ void Render::Sutherland_Hodgman(const DrawMode &drawMode, const std::vector<Vert
         res.position = currentPoint.position * (1 - weight) + nextPoint.position * weight;
         res.color = currentPoint.color * (1 - weight) + nextPoint.color * weight;
         res.texCoord = currentPoint.texCoord * (1 - weight) + nextPoint.texCoord * weight;
+        res.oneOverW = currentPoint.oneOverW * (1 - weight) + nextPoint.oneOverW * weight;
 
         return res;
     };
@@ -318,6 +362,7 @@ void Render::RenderModel(const Model &model, Image *textureImage)
             EarClipping(vertexesData, model, face);
         } else {
             for (int j = 0; j < 3; j++) {
+                int vertexIndex = face.vertexIndices[j];
                 Vector3 position = model.vertices[face.vertexIndices[j]];
                 Vector3 normal = model.normals[face.normalIndices[j]];
                 Vector2 uv = model.uvs[face.uvIndices[j]];
@@ -350,7 +395,7 @@ void Render::RenderModel(const Model &model, Image *textureImage)
 
     //应用视口变换映射到屏幕空间
     //需要注意的是，这里从宽高从[-1, 1]变换到了[0, width]或[0, height]
-    //那么在设置点的颜色位置和深度图中的位置范围是[0, width - 1]和[0, height - 1]
+    //但是在设置点的颜色位置和深度图中的位置范围是[0, width - 1]和[0, height - 1]
     //因此在画点和深度测试时，需要剔除掉这两个边界条件
     ViewPortTransform(cullOutputs);
 
@@ -359,12 +404,13 @@ void Render::RenderModel(const Model &model, Image *textureImage)
     if (rasterOutputs.empty())
         return;
     
-    //Todo:透视修正
+    //恢复透视修正
+    PerspectiveCorrection(rasterOutputs);
 
     //应用 FragmentShader 
     FragmentShaderOutput fsOutput;
     for (uint32_t i = 0; i < rasterOutputs.size(); ++i) {
-        curShader_->FragmentShader(rasterOutputs[i], fsOutput);
+        curShader_->FragmentShader(rasterOutputs[i], fsOutput, textureImage);
         //深度测试
         if (!DepthTest(fsOutput)) 
             continue;

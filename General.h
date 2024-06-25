@@ -20,6 +20,7 @@ struct VertexData {
     Vector4 color;        
     Vector3 normal;       //法线
     Vector2 texCoord;     //纹理坐标
+    float oneOverW = 0.0f;       //记录剪裁空间下 1 / position，用于透视修正
 };
 
 //片元着色器输出结构

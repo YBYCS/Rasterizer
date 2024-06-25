@@ -18,6 +18,8 @@ private:
     static VertexData VertexShader(const Vector3& position, const Color& color, const Vector3& normal, const Vector2& texCoord);
     //透视除法，用于将顶点从剪裁空间转换到NDC空间
     static void PerspectiveDivision(std::vector<VertexData> &output);
+    //恢复透视修正
+    static void PerspectiveCorrection(std::vector<VertexData> &output);
     //视口变换
     static void ViewPortTransform(std::vector<VertexData> &output);
     static bool DepthTest(const FragmentShaderOutput &output);
