@@ -10,6 +10,7 @@
 #include "Render.h"
 #include "Simpleshader.h"
 #include "HalfLambertShader.h"
+#include "BlinnPhongShader.h"
 
 #pragma comment(linker, "/subsystem:window /entry:WinMainCRTStartup")
 
@@ -25,7 +26,7 @@ void Start() {
     viewMatrix = Inverse(cameraModelMatrix);
     modelMatrix = Matrix4();
     //设置应用哪一个shader
-    HalfLambertShader *shader = new HalfLambertShader();
+    BlinnPhongShader *shader = new BlinnPhongShader();
     shader->SetModelMatrix(modelMatrix);
     shader->SetViewMatrix(viewMatrix);
     shader->SetProjectMatrix(perspectiveMatrix);
