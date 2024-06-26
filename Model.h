@@ -20,7 +20,7 @@ public:
     std::vector<Vector2> uvs;
     std::vector<Vector3> normals;
     std::vector<Face> faces;
-    static bool LoadOBJ(const std::string &filename, Model &model);
+    static bool LoadOBJ(const std::string &filename, Model *model);
 };
 
 

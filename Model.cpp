@@ -8,7 +8,7 @@
 #include "sstream"
 #include "Point.h"
 
-bool Model::LoadOBJ(const std::string &filename, Model &model)
+bool Model::LoadOBJ(const std::string &filename, Model *model)
 {
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -16,10 +16,10 @@ bool Model::LoadOBJ(const std::string &filename, Model &model)
         return false;
     }
 
-    model.vertices.clear();
-    model.uvs.clear();
-    model.vertices.clear();
-    model.faces.clear();
+    model->vertices.clear();
+    model->uvs.clear();
+    model->vertices.clear();
+    model->faces.clear();
     
     std::string line;
     while (std::getline(file, line)) {
@@ -31,15 +31,15 @@ bool Model::LoadOBJ(const std::string &filename, Model &model)
             //TODO:有些模型v有六个数字
             Vector3 vertex;
             lineStream >> vertex.x >> vertex.y >> vertex.z;
-            model.vertices.emplace_back(vertex);
+            model->vertices.emplace_back(vertex);
         } else if (prefix == "vt") {
             Vector2 uv;
             lineStream >> uv.x >> uv.y;
-            model.uvs.emplace_back(uv);
+            model->uvs.emplace_back(uv);
         } else if (prefix == "vn") {
             Vector3 normal;
             lineStream >> normal.x >> normal.y >> normal.z;
-            model.normals.emplace_back(normal);
+            model->normals.emplace_back(normal);
         } else if (prefix == "f") {
             Face face;
             std::string vertexData;
@@ -66,13 +66,10 @@ bool Model::LoadOBJ(const std::string &filename, Model &model)
                     return false;
                 }
             }
-            model.faces.emplace_back(face);
+            model->faces.emplace_back(face);
         }
     }
 
     file.close();
-    // for (int i = 0; i < model.vertices.size(); i++) {
-    //     std::cout << model.vertices[i].x << "," << model.vertices[i].y << "," << model.vertices[i].z <<std::endl;
-    // }
     return true;
 }

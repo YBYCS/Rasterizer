@@ -26,7 +26,7 @@ private:
     //背面剔除
     static bool BackfaceCulling(const VertexData &v0, const VertexData &v1, const VertexData &v2);
     //耳剪法，将多边形拆分成三角形
-    static void EarClipping(std::vector<VertexData> &res, const Model &model, const Face& targetFace);
+    static void EarClipping(std::vector<VertexData> &res, Model *model, const Face& targetFace);
     //在剪裁空间下进行一系列剪裁操作
     static void ClipInClipSpace(const DrawMode &drawMode, const std::vector<VertexData> &input, std::vector<VertexData> &output);
     //剪裁算法
@@ -39,5 +39,5 @@ public:
     static void SetShader(BaseShader *shader);
     //初始化深度图
     static void InitializeDepthMap(float value = 1.0f);
-    static void RenderModel(const Model& model, Image* textureImage);
+    static void RenderModel(Model *model, Image *textureImage);
 };

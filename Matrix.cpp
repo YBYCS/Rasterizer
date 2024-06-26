@@ -444,3 +444,35 @@ Matrix4 ScreenMatrix(int width, int height) {
     res.Set(2, 3, 0.5f);
     return res;
 }
+
+/// @brief 将世界坐标系中的点转换到相机坐标系中
+/// @param cameraPosition 相机的位置
+/// @param objectPosition 目标位置
+/// @param up 相机上向量，注意并不一定是摄像机的Y轴方向
+/// @return 生成一个从相机位置指向一个目标位置的观察矩阵
+Matrix4 LookAt(const Vector3 &cameraPosition, const Vector3 &objectPosition, const Vector3 &up)
+{
+    //相机朝向，即相机到目标位置的向量
+    Vector3 forward = Normalize(objectPosition - cameraPosition);
+    //相机右轴，也是摄像机坐标系的x轴方向
+    Vector3 right = Normalize(Cross(forward, up));
+    //相机上轴，即摄像机的Y轴方向，也就是摄像机脑袋方向。这个向量和up向量并不一定是同一个向量
+    Vector3 upVector = Normalize(Cross(right, forward));
+
+    Matrix4 res(1);
+
+    res.Set(0, 0, right.x);
+    res.Set(0, 1, right.y);
+    res.Set(0, 2, right.z);
+    res.Set(0, 3, -Dot(right, cameraPosition));
+    res.Set(1, 0, upVector.x);
+    res.Set(1, 1, upVector.y);
+    res.Set(1, 2, upVector.z);
+    res.Set(1, 3, -Dot(upVector, cameraPosition));
+    res.Set(2, 0, -forward.x);
+    res.Set(2, 1, -forward.y);
+    res.Set(2, 2, -forward.z);
+    res.Set(2, 3, Dot(forward, cameraPosition));
+
+    return res;
+}

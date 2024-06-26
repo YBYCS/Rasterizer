@@ -11,49 +11,53 @@
 #include "Simpleshader.h"
 #include "HalfLambertShader.h"
 #include "BlinnPhongShader.h"
+#include "BaseShader.h"
 
 #pragma comment(linker, "/subsystem:window /entry:WinMainCRTStartup")
 
 Matrix4 modelMatrix;
-Matrix4 viewMatrix;
-Matrix4 perspectiveMatrix;
+Camera *camera = nullptr;
+BaseShader *shader = nullptr;
+Model *model = nullptr;
+std::unique_ptr<Image> textureImage;
 
 void Start() {
-    //计算MVP矩阵
-    perspectiveMatrix = Perspective(60.0f, 0.1f, 100.0f);
-    //模拟相机位置
-    auto cameraModelMatrix = Translate(Matrix4(1.0f), Vector3(0.0f, 0.0f, 2.0f));
-    viewMatrix = Inverse(cameraModelMatrix);
+    //创建相机对象
+    camera = new Camera(60.0f, 0.1f, 100.0f, {0.0f, 1.0f, 0.0f});
+    window->SetCamera(camera);
+
     modelMatrix = Matrix4();
     //设置应用哪一个shader
-    BlinnPhongShader *shader = new BlinnPhongShader();
-    shader->SetModelMatrix(modelMatrix);
-    shader->SetViewMatrix(viewMatrix);
-    shader->SetProjectMatrix(perspectiveMatrix);
-    Render::SetShader(shader);
+    shader = new BlinnPhongShader();
     shader->ambientLight.color = Vector3(1.0f, 1.0f, 1.0f);
     shader->ambientLight.intensity = 0.1f;
     shader->directionalLight.color = Vector3(1.0f, 1.0f, 1.0f);
     shader->directionalLight.direction = Vector3(-1.0f, -0.3f, -0.7f);
     shader->directionalLight.intensity = 1.4f;
-
+    Render::SetShader(shader);
+    
+    shader->SetViewMatrix(camera->GetViewMatrix());
+    shader->SetProjectMatrix(camera->GetProjectionMatrix());
+    
     //读取模型
-    Model model;
+    model = new Model();
     if(!Model::LoadOBJ("assets/obj/african_head/african_head.obj", model)) {
         std::cout << "fuck";
         return;
     }
     //读取纹理
-    std::unique_ptr<Image> textureImage = Image::CreateImage("assets/obj/african_head/african_head_diffuse.tga");
-    Render::RenderModel(model, textureImage.get());
-    window->UpdateWindowBuffer();
-    delete shader;
+    textureImage = Image::CreateImage("assets/obj/african_head/african_head_diffuse.tga");
 }
 
 //主循环 逻辑放这里
 void Tick() {
     //首先应该将上一帧绘制内容清空
-    //window->Clear();
+    window->Clear();
+
+    shader->SetModelMatrix(modelMatrix);
+    shader->SetViewMatrix(camera->GetViewMatrix());
+    shader->SetProjectMatrix(camera->GetProjectionMatrix());
+    Render::RenderModel(model, textureImage.get());
 
     // 更新窗口显示
     window->UpdateWindowBuffer();
@@ -74,6 +78,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         alive = window->MyPeekMessage(msg);
         Tick();
     }
+
+    delete shader;
+    delete camera;
+    delete model;
+
     return 0;
 }
 

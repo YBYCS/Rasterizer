@@ -5,10 +5,6 @@
 
 class BlinnPhongShader : public BaseShader {
 public:
-    DirectionalLight directionalLight;
-    AmbientLight ambientLight;   //环境光
-
-public:
     BlinnPhongShader() = default;
     virtual ~BlinnPhongShader() = default;
 

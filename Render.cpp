@@ -4,7 +4,7 @@
 #include "WindowController.h"
 
 BaseShader* Render::curShader_ = nullptr;
-Matrix4 Render::screenMatrix_ = ScreenMatrix();
+Matrix4 Render::screenMatrix_ = ScreenMatrix(window->GetWidth(), window->GetHeight());
 bool Render::enableBlending_ = false;
 float* Render::depthMap_ = new float[window->GetWidth() * window->GetHeight()];
 
@@ -107,7 +107,7 @@ bool Render::BackfaceCulling(const VertexData &v0, const VertexData &v1, const V
     return Cross(edge1, edge2).z > 0;
 }
 
-void Render::EarClipping(std::vector<VertexData> &res, const Model &model, const Face &targetFace)
+void Render::EarClipping(std::vector<VertexData> &res, Model *model, const Face &targetFace)
 {
     //这里使用的耳剪法是最简单的版本，时间复杂度为n³，有更好的时间复杂度为n²的版本
     //但是考虑到多边形面的顶点不会很多，故只采用了最简单的版本。（才不是因为懒
@@ -147,9 +147,9 @@ void Render::EarClipping(std::vector<VertexData> &res, const Model &model, const
     std::vector<Vector3> polygon;
     //注意：这里GPT说obj文件会保证多边形顶点按照顺序存储，如果出现bug可以查看是否是这个原因
     for (size_t i = 0; i < n; ++i) {
-        polygon.push_back(model.vertices[indices[i]]);
-        normals.push_back(model.normals[targetFace.normalIndices[i]]);
-        uvs.push_back(model.uvs[targetFace.uvIndices[i]]);
+        polygon.push_back(model->vertices[indices[i]]);
+        normals.push_back(model->normals[targetFace.normalIndices[i]]);
+        uvs.push_back(model->uvs[targetFace.uvIndices[i]]);
     }
 
     // 三角化过程
@@ -365,7 +365,7 @@ void Render::InitializeDepthMap(float value)
     std::fill_n(depthMap_, window->GetWidth() * window->GetHeight(), value);
 }
 
-void Render::RenderModel(const Model &model, Image *textureImage)
+void Render::RenderModel(Model *model, Image *textureImage)
 {
     if (curShader_ == nullptr) {
         std::__throw_runtime_error("shader is null !");
@@ -376,8 +376,8 @@ void Render::RenderModel(const Model &model, Image *textureImage)
     std::vector<VertexData> vertexesData;
     std::vector<int> vertexesIndex;
     int i1 = 0, i2 = 0;
-    for (uint32_t i = 0; i < model.faces.size(); i++) {
-        auto face = model.faces[i];
+    for (uint32_t i = 0; i < model->faces.size(); i++) {
+        auto face = model->faces[i];
         //如果一个面的顶点个数超过三个，使用耳剪法进行切分
         int n = face.vertexIndices.size();
         if (n > 3) {
@@ -385,9 +385,9 @@ void Render::RenderModel(const Model &model, Image *textureImage)
         } else {
             for (int j = 0; j < 3; j++) {
                 int vertexIndex = face.vertexIndices[j];
-                Vector3 position = model.vertices[face.vertexIndices[j]];
-                Vector3 normal = model.normals[face.normalIndices[j]];
-                Vector2 uv = model.uvs[face.uvIndices[j]];
+                Vector3 position = model->vertices[face.vertexIndices[j]];
+                Vector3 normal = model->normals[face.normalIndices[j]];
+                Vector2 uv = model->uvs[face.uvIndices[j]];
                 //obj文件只用纹理获取颜色，默认底色为白色
                 vertexesData.emplace_back(VertexShader(position, Color(), normal, uv));
             }

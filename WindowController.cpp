@@ -2,6 +2,7 @@
 #include "main.h"
 #include <iostream>
 #include "Render.h"
+#include <windowsx.h>
 
 WindowController* WindowController::instance_ = nullptr;
 WindowController* WindowController::getInstance() 
@@ -62,7 +63,12 @@ ATOM WindowController::RegisterWindowClass(HINSTANCE hInstance)
     return RegisterClassExW(&wc);
 }
 
-void WindowController::CreateAWindow(HINSTANCE hInstance) 
+void WindowController::SetCamera(Camera *camera)
+{
+    camera_ = camera;
+}
+
+void WindowController::CreateAWindow(HINSTANCE hInstance)
 {
     hInstance_ = hInstance;
 
@@ -123,10 +129,37 @@ void WindowController::HandleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
                 EndPaint(hwnd, &ps);
             }
             break;
-        case WM_DESTROY:
+        case WM_LBUTTONDOWN: {
+            if (camera_)
+                camera_->OnLeftMouseDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+            break;
+        }
+        case WM_LBUTTONUP: {
+            if (camera_)
+                camera_->OnLeftMouseUp();
+            break;
+        }
+        case WM_RBUTTONDOWN: {
+            if (camera_)
+                camera_->OnRightMouseDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+            break;
+        }
+        case WM_RBUTTONUP: {
+            if (camera_)
+                camera_->OnRightMouseUp();
+            break;
+        }
+        case WM_MOUSEMOVE: {
+            if (camera_) {
+                camera_->OnMouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+            }
+            break;
+        }
+        case WM_DESTROY: {
             PostQuitMessage(0);     //发出线程终止请求
             exit(0);                //退出进程
             break;
+        }
     }
 }
 

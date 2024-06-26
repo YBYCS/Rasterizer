@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <stdint.h>
 #include "Color.h"
+#include "Camera.h"
 
 #define window WindowController::getInstance()
 
@@ -24,6 +25,7 @@ public:
     void Clear();
     int GetWidth() { return width_; };
     int GetHeight() { return height_; };
+    void SetCamera(Camera* camera);
 private:
     void CreateAWindow(HINSTANCE hInstance);
     ATOM RegisterWindowClass(HINSTANCE hInstance);
@@ -41,4 +43,5 @@ private:
     HBITMAP hBitmap_;                   //位图
     void* graphicsBuffer_ = nullptr;    //指向位图像素数据的指针
     Color* colorBuffer_ = nullptr;      //实际用于操作画布颜色的内存
+    Camera* camera_ = nullptr;          //摄像机对象
 };

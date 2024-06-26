@@ -23,6 +23,9 @@ protected:
     Matrix4 viewMatrix_;
     Matrix4 projectionMatrix_;
 public:
+    DirectionalLight directionalLight;
+    AmbientLight ambientLight;   //环境光
+public:
     BaseShader() = default;
     virtual ~BaseShader() = default;
 
