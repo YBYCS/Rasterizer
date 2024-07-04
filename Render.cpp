@@ -6,7 +6,8 @@
 BaseShader* Render::curShader_ = nullptr;
 Matrix4 Render::screenMatrix_ = ScreenMatrix(window->GetWidth(), window->GetHeight());
 bool Render::enableBlending_ = false;
-float* Render::depthMap_ = new float[window->GetWidth() * window->GetHeight()];
+float* Render::depthMap_ = new float[window->GetWidth() * window->GetHeight()]; 
+float* Render::MsaaDepthMap_ = new float[window->GetWidth() * window->GetHeight() * 4]; //4x MSAA
 
 VertexData Render::VertexShader(const Vector3 &position, const Color &color, const Vector3 &normal, const Vector2 &texCoord)
 {
@@ -365,6 +366,11 @@ void Render::InitializeDepthMap(float value)
     std::fill_n(depthMap_, window->GetWidth() * window->GetHeight(), value);
 }
 
+void Render::InitializeMassDepthMap(float value)
+{
+    std::fill_n(MsaaDepthMap_, window->GetWidth() * window->GetHeight() * 4, value);
+}
+
 void Render::RenderModel(Model *model, Image *textureImage)
 {
     if (curShader_ == nullptr) {
@@ -438,4 +444,14 @@ void Render::RenderModel(Model *model, Image *textureImage)
             continue;
         window->DrawPoint(fsOutput.position.x, fsOutput.position.y, enableBlending_ ? BlendColor(fsOutput) : fsOutput.color);
     }
+}
+
+float Render::GetDepthFromMsaa(int x, int y, int sample)
+{
+    return MsaaDepthMap_[(y * window->GetWidth() + x) * 4 + sample];
+}
+
+void Render::SetMsaaDepth(int x, int y, int sample, float value)
+{
+    MsaaDepthMap_[(y * window->GetWidth() + x) * 4 + sample] = value;
 }

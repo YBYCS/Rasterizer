@@ -12,7 +12,8 @@ private:
     static BaseShader* curShader_;
     static Matrix4 screenMatrix_;
     static bool enableBlending_; //是否允许颜色混合
-    static float *depthMap_;    //深度图
+    static float *depthMap_;     //深度图
+    static float *MsaaDepthMap_; //用于Msaa的深度图
 private:
     //使用顶点着色器处理顶点数据
     static VertexData VertexShader(const Vector3& position, const Color& color, const Vector3& normal, const Vector2& texCoord);
@@ -39,5 +40,9 @@ public:
     static void SetShader(BaseShader *shader);
     //初始化深度图
     static void InitializeDepthMap(float value = 1.0f);
+    //初始化Msaa深度图
+    static void InitializeMassDepthMap(float value = 1.0f);
     static void RenderModel(Model *model, Image *textureImage);
+    static float GetDepthFromMsaa(int x, int y, int sample);
+    static void SetMsaaDepth(int x, int y, int sample, float value);
 };

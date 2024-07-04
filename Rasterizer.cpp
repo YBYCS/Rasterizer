@@ -4,6 +4,7 @@
 #include <math.h>
 #include "WindowController.h"
 #include <iostream>
+#include "Render.h"
 
 Rasterizer::Rasterizer()
 {
@@ -196,6 +197,7 @@ void Rasterizer::RasterizeLine(std::vector<VertexData> &output, const VertexData
 
 void Rasterizer::RasterizeTriangle(std::vector<VertexData> &output, const VertexData &v0, const VertexData &v1, const VertexData &v2, const Image* texture)
 {
+    const float sampleOffsets[4][2] = {{-0.25, -0.25}, {0.25, -0.25}, {-0.25, 0.25}, {0.25, 0.25}};
     //改用了更加先进的 Edge Equation 算法
     int maxX = static_cast<int>(std::max(v0.position.x, std::max(v1.position.x, v2.position.x)));
     int minX = static_cast<int>(std::min(v0.position.x, std::min(v1.position.x, v2.position.x)));
@@ -207,41 +209,65 @@ void Rasterizer::RasterizeTriangle(std::vector<VertexData> &output, const Vertex
     auto e2 = Vector2(v2.position.x - v0.position.x, v2.position.y - v0.position.y);
     float totalArea = std::abs(Cross(e1, e2));
 
-    Vector2 pv0, pv1, pv2;
-    VertexData currentVertex;
-    
     for (int x = minX; x <= maxX; ++x) {
         for (int y = minY; y <= maxY; ++y) {
-            pv0 = Vector2(v0.position.x - x, v0.position.y - y);
-            pv1 = Vector2(v1.position.x - x, v1.position.y - y);
-            pv2 = Vector2(v2.position.x - x, v2.position.y - y);
+            //统计像素的覆盖率与深度变化
+            float count_coverage = 0, count_depth = 0;
 
-            auto cross1 = Cross(pv0, pv1);
-            auto cross2 = Cross(pv1, pv2);
-            auto cross3 = Cross(pv2, pv0);
+            for (int sample = 0; sample < 4; ++sample) {
+                float offsetX = sampleOffsets[sample][0];
+                float offsetY = sampleOffsets[sample][1];
 
-            bool negativeAll = cross1 <= 0 && cross2 <= 0 && cross3 <= 0;
-            bool positiveAll = cross1 >= 0 && cross2 >= 0 && cross3 >= 0;
+                Vector2 pv0 = Vector2(v0.position.x - (x + offsetX), v0.position.y - (y + offsetY));
+                Vector2 pv1 = Vector2(v1.position.x - (x + offsetX), v1.position.y - (y + offsetY));
+                Vector2 pv2 = Vector2(v2.position.x - (x + offsetX), v2.position.y - (y + offsetY));
 
-            if (negativeAll || positiveAll) {
+                auto cross1 = Cross(pv0, pv1);
+                auto cross2 = Cross(pv1, pv2);
+                auto cross3 = Cross(pv2, pv0);
+
+                bool negativeAll = cross1 <= 0 && cross2 <= 0 && cross3 <= 0;
+                bool positiveAll = cross1 >= 0 && cross2 >= 0 && cross3 >= 0;
+
+                if (negativeAll || positiveAll) {
+                    //如果该采样点在三角形内，增加覆盖率的计数
+                    count_coverage++;
+                    //计算深度
+                    float alpha = std::abs(Cross(pv1, pv2)) / totalArea;
+                    float beta = std::abs(Cross(pv0, pv2)) / totalArea;
+                    float gamma = std::abs(Cross(pv0, pv1)) / totalArea;
+
+                    float z = alpha * v0.position.z + beta * v1.position.z + gamma * v2.position.z;
+                    if (Render::GetDepthFromMsaa(x, y, sample) < z) {
+                        continue;
+                    }
+                    // 如果该采样点的深度发生了变化，说明该像素分布在边缘，需要进行抗锯齿
+                    count_depth++;
+                    Render::SetMsaaDepth(x, y, sample, z);
+                }
+            }
+
+            if(count_depth > 0) {
+                VertexData currentVertex;
                 currentVertex.position.x = x;
                 currentVertex.position.y = y;
-                
-                //颜色，法线，纹理均采样重心插值
+                Vector2 pv0 = Vector2(v0.position.x - x, v0.position.y - y);
+                Vector2 pv1 = Vector2(v1.position.x - x, v1.position.y - y);
+                Vector2 pv2 = Vector2(v2.position.x - x, v2.position.y - y);
+
                 float alpha = std::abs(Cross(pv1, pv2)) / totalArea;
                 float beta = std::abs(Cross(pv0, pv2)) / totalArea;
                 float gamma = std::abs(Cross(pv0, pv1)) / totalArea;
-                
-                //插值1/w，用于透视恢复
+
                 currentVertex.oneOverW = alpha * v0.oneOverW + beta * v1.oneOverW + gamma * v2.oneOverW;
-                //插值深度值
-                currentVertex.position.z = alpha * v0.position.z + beta * v1.position.z + gamma * v2.position.z;            
-                //插值纹理
+                currentVertex.position.z = alpha * v0.position.z + beta * v1.position.z + gamma * v2.position.z;
                 currentVertex.texCoord = alpha * v0.texCoord + beta * v1.texCoord + gamma * v2.texCoord;
-                //插值颜色
-                currentVertex.color = alpha * v0.color + beta * v1.color + gamma * v2.color;
-                //插值法线
                 currentVertex.normal = alpha * v0.normal + beta * v1.normal + gamma * v2.normal;
+                //颜色进行额外混合
+                Vector4 color = alpha * v0.color + beta * v1.color + gamma * v2.color;
+                float w = color.w;
+                currentVertex.color = color * (count_coverage / 4);
+                currentVertex.color.w = w;
 
                 output.emplace_back(currentVertex);
             }
