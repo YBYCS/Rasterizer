@@ -246,31 +246,30 @@ void Rasterizer::RasterizeTriangle(std::vector<VertexData> &output, const Vertex
                     Render::SetMsaaDepth(x, y, sample, z);
                 }
             }
+            VertexData currentVertex;
+            currentVertex.position.x = x;
+            currentVertex.position.y = y;
+            Vector2 pv0 = Vector2(v0.position.x - x, v0.position.y - y);
+            Vector2 pv1 = Vector2(v1.position.x - x, v1.position.y - y);
+            Vector2 pv2 = Vector2(v2.position.x - x, v2.position.y - y);
 
+            float alpha = std::abs(Cross(pv1, pv2)) / totalArea;
+            float beta = std::abs(Cross(pv0, pv2)) / totalArea;
+            float gamma = std::abs(Cross(pv0, pv1)) / totalArea;
+
+            currentVertex.oneOverW = alpha * v0.oneOverW + beta * v1.oneOverW + gamma * v2.oneOverW;
+            currentVertex.position.z = alpha * v0.position.z + beta * v1.position.z + gamma * v2.position.z;
+            currentVertex.texCoord = alpha * v0.texCoord + beta * v1.texCoord + gamma * v2.texCoord;
+            currentVertex.normal = alpha * v0.normal + beta * v1.normal + gamma * v2.normal;
+
+            //颜色进行额外混合
+            Vector4 color = alpha * v0.color + beta * v1.color + gamma * v2.color;
             if(count_depth > 0) {
-                VertexData currentVertex;
-                currentVertex.position.x = x;
-                currentVertex.position.y = y;
-                Vector2 pv0 = Vector2(v0.position.x - x, v0.position.y - y);
-                Vector2 pv1 = Vector2(v1.position.x - x, v1.position.y - y);
-                Vector2 pv2 = Vector2(v2.position.x - x, v2.position.y - y);
-
-                float alpha = std::abs(Cross(pv1, pv2)) / totalArea;
-                float beta = std::abs(Cross(pv0, pv2)) / totalArea;
-                float gamma = std::abs(Cross(pv0, pv1)) / totalArea;
-
-                currentVertex.oneOverW = alpha * v0.oneOverW + beta * v1.oneOverW + gamma * v2.oneOverW;
-                currentVertex.position.z = alpha * v0.position.z + beta * v1.position.z + gamma * v2.position.z;
-                currentVertex.texCoord = alpha * v0.texCoord + beta * v1.texCoord + gamma * v2.texCoord;
-                currentVertex.normal = alpha * v0.normal + beta * v1.normal + gamma * v2.normal;
-                //颜色进行额外混合
-                Vector4 color = alpha * v0.color + beta * v1.color + gamma * v2.color;
                 float w = color.w;
                 currentVertex.color = color * (count_coverage / 4);
                 currentVertex.color.w = w;
-
-                output.emplace_back(currentVertex);
             }
+            output.emplace_back(currentVertex);
         }
     }
 }
