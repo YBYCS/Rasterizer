@@ -18,7 +18,7 @@ bool BlinnPhongShader::FragmentShader(const VertexData &input, FragmentShaderOut
     //光照方向
     Vector3 lightDir = Normalize(directionalLight.direction);
     //应用光照前，物体原本的颜色
-    Vector4 originalColor = image ? ColorToVector4(Rasterizer::Sampling(input.texCoord, image)) : input.color;
+    Vector4 originalColor =  input.color;
     //计算漫反射
     float diff = std::max(Dot(normal, -lightDir), 0.0f);
     Vector4 diffuse = originalColor * diff * Vector4(directionalLight.color.x, directionalLight.color.y, directionalLight.color.z, 1.0f) * directionalLight.intensity;

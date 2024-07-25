@@ -7,7 +7,8 @@ BaseShader* Render::curShader_ = nullptr;
 Matrix4 Render::screenMatrix_ = ScreenMatrix(window->GetWidth(), window->GetHeight());
 bool Render::enableBlending_ = false;
 float* Render::depthMap_ = new float[window->GetWidth() * window->GetHeight()]; 
-float* Render::MsaaDepthMap_ = new float[window->GetWidth() * window->GetHeight() * 4]; //4x MSAA
+float** Render::msaaDepthMap_ = new float*[window->GetWidth() * window->GetHeight()]; //4x MSAA
+Vector4** Render::msaaColorMap_ = new Vector4*[window->GetWidth() * window->GetHeight()];
 
 VertexData Render::VertexShader(const Vector3 &position, const Color &color, const Vector3 &normal, const Vector2 &texCoord)
 {
@@ -55,7 +56,7 @@ void Render::PerspectiveDivision(std::vector<VertexData> &output)
         vertexData.oneOverW = 1.0f / vertexData.position.w;
         vertexData.position *= vertexData.oneOverW;
         vertexData.position.w = 1.0f;   //Position.w要恢复为1
-        vertexData.color *= vertexData.oneOverW;
+        //vertexData.color *= vertexData.oneOverW;
         vertexData.normal *= vertexData.oneOverW;
         vertexData.texCoord *= vertexData.oneOverW;
 
@@ -68,8 +69,7 @@ void Render::PerspectiveCorrection(std::vector<VertexData> &output)
 {
     //恢复顶点数据
     for (auto &vertexData : output) {
-        vertexData.color /= vertexData.oneOverW;
-        vertexData.texCoord /= vertexData.oneOverW;
+        //vertexData.color /= vertexData.oneOverW;
         vertexData.normal /= vertexData.oneOverW;
     }
 }
@@ -366,9 +366,24 @@ void Render::InitializeDepthMap(float value)
     std::fill_n(depthMap_, window->GetWidth() * window->GetHeight(), value);
 }
 
-void Render::InitializeMassDepthMap(float value)
+void Render::InitializeMsaaDepthMap(float value)
 {
-    std::fill_n(MsaaDepthMap_, window->GetWidth() * window->GetHeight() * 4, value);
+    for (int i = 0; i < window->GetWidth() * window->GetHeight(); i++) {
+        msaaDepthMap_[i] = new float[4];
+        for (int j = 0; j < 4; j++) {
+            msaaDepthMap_[i][j] = value;
+        }
+    }
+}
+
+void Render::InitializeMsaaColorMap()
+{
+    for (int i = 0; i < window->GetWidth() * window->GetHeight(); i++) {
+        msaaColorMap_[i] = new Vector4[4];
+        for (int j = 0; j < 4; j++) {
+            msaaColorMap_[i][j] = Vector4(0.0f, 0.0, 0.0f, 1.0f);
+        }
+    }
 }
 
 void Render::RenderModel(Model *model, Image *textureImage)
@@ -446,12 +461,40 @@ void Render::RenderModel(Model *model, Image *textureImage)
     }
 }
 
+void Render::ClearMsaaDepthMap(float value)
+{
+    for (int i = 0; i < window->GetWidth() * window->GetHeight(); i++) {
+        for (int j = 0; j < 4; j++) {
+            msaaDepthMap_[i][j] = value;
+        }
+    }
+}
+
+void Render::ClearMsaaColorMap()
+{
+    for (int i = 0; i < window->GetWidth() * window->GetHeight(); i++) {
+        for (int j = 0; j < 4; j++) {
+            msaaColorMap_[i][j] = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+        }
+    }
+}
+
 float Render::GetDepthFromMsaa(int x, int y, int sample)
 {
-    return MsaaDepthMap_[(y * window->GetWidth() + x) * 4 + sample];
+    return msaaDepthMap_[(y * window->GetWidth() + x)][sample];
+}
+
+Vector4 Render::GetColorFromMsaa(int x, int y, int sample)
+{
+    return msaaColorMap_[(y * window->GetWidth() + x)][sample];
 }
 
 void Render::SetMsaaDepth(int x, int y, int sample, float value)
 {
-    MsaaDepthMap_[(y * window->GetWidth() + x) * 4 + sample] = value;
+    msaaDepthMap_[y * window->GetWidth() + x][sample] = value;
+}
+
+void Render::SetMsaaColor(int x, int y, int sample, Vector4 color)
+{
+    msaaColorMap_[y * window->GetWidth() + x][sample] = color;
 }

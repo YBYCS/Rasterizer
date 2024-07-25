@@ -49,6 +49,8 @@ void WindowController::InitializeWindow(HINSTANCE hInstance)
     colorBuffer_ = (Color*)graphicsBuffer_;
     //初始化深度图
     Render::InitializeDepthMap();
+    Render::InitializeMsaaDepthMap();
+    Render::InitializeMsaaColorMap();
 }
 
 ATOM WindowController::RegisterWindowClass(HINSTANCE hInstance) 
@@ -204,5 +206,6 @@ void WindowController::Clear()
     std::fill_n(colorBuffer_, width_ * height_, Color(0, 0, 0, 0));
     //重新设置深度测试中深度图的深度值
     Render::InitializeDepthMap();
-    Render::InitializeMassDepthMap();
+    Render::ClearMsaaColorMap();
+    Render::ClearMsaaDepthMap();
 }
