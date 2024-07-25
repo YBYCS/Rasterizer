@@ -39,6 +39,7 @@ private:
     static void RasterizeLine(std::vector<VertexData> &output, const VertexData& v1, const VertexData& v2);
     //光栅化一个三角形
     static void RasterizeTriangle(std::vector<VertexData> &output, const VertexData& v1, const VertexData& v2, const VertexData& v3, const Image* texture = nullptr);
+    static void RasterizeTriangle2(std::vector<VertexData> &output);
 public:
     static void SetSamplingMethod(SamplingMethod method);
     static SamplingMethod GetSamplingMethod();

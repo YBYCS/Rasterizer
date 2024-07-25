@@ -241,7 +241,6 @@ void Rasterizer::RasterizeTriangle(std::vector<VertexData> &output, const Vertex
                 bool positiveAll = cross1 >= 0 && cross2 >= 0 && cross3 >= 0;
 
                 if (negativeAll || positiveAll) {
-                    num++;
                     //该采样点在三角形内，计算深度
                     float alpha = std::abs(Cross(pv1, pv2)) / totalArea;
                     float beta = std::abs(Cross(pv0, pv2)) / totalArea;
@@ -249,7 +248,7 @@ void Rasterizer::RasterizeTriangle(std::vector<VertexData> &output, const Vertex
 
                     float z = alpha * v0.position.z + beta * v1.position.z + gamma * v2.position.z;
                     if (z < Render::GetDepthFromMsaa(x, y, sample)) {
-                        
+                        num++;
                         Render::SetMsaaDepth(x, y, sample, z);
                         //设置颜色
                         float oneOverW = alpha * v0.oneOverW + beta * v1.oneOverW + gamma * v2.oneOverW;
@@ -259,26 +258,32 @@ void Rasterizer::RasterizeTriangle(std::vector<VertexData> &output, const Vertex
                     }
                 }
             }
-            VertexData currentVertex;
-            currentVertex.position.x = x;
-            currentVertex.position.y = y;
+            if (num > 0 || flag1) {
+                VertexData currentVertex;
+                currentVertex.position.x = x;
+                currentVertex.position.y = y;
 
-            float alpha = std::abs(Cross(pv1, pv2)) / totalArea;
-            float beta = std::abs(Cross(pv0, pv2)) / totalArea;
-            float gamma = std::abs(Cross(pv0, pv1)) / totalArea;
+                float alpha = std::abs(Cross(pv1, pv2)) / totalArea;
+                float beta = std::abs(Cross(pv0, pv2)) / totalArea;
+                float gamma = std::abs(Cross(pv0, pv1)) / totalArea;
 
-            currentVertex.oneOverW = alpha * v0.oneOverW + beta * v1.oneOverW + gamma * v2.oneOverW;
-            currentVertex.position.z = alpha * v0.position.z + beta * v1.position.z + gamma * v2.position.z;
-            currentVertex.texCoord = (alpha * v0.texCoord + beta * v1.texCoord + gamma * v2.texCoord) /= currentVertex.oneOverW;
-            currentVertex.normal = alpha * v0.normal + beta * v1.normal + gamma * v2.normal;
-            //颜色进行额外混合
-            if (num > 0) {
-                currentVertex.color = ((Render::GetColorFromMsaa(x, y, 0) + Render::GetColorFromMsaa(x, y, 1) + Render::GetColorFromMsaa(x, y, 2) + Render::GetColorFromMsaa(x, y, 3)) / 4);
-            } else if (flag1) {
-                currentVertex.color = texture ? (ColorToVector4(Sampling(currentVertex.texCoord, texture))): alpha * v0.color + beta * v1.color + gamma * v2.color;
+                currentVertex.oneOverW = alpha * v0.oneOverW + beta * v1.oneOverW + gamma * v2.oneOverW;
+                currentVertex.position.z = alpha * v0.position.z + beta * v1.position.z + gamma * v2.position.z;
+                currentVertex.texCoord = (alpha * v0.texCoord + beta * v1.texCoord + gamma * v2.texCoord) /= currentVertex.oneOverW;
+                currentVertex.normal = alpha * v0.normal + beta * v1.normal + gamma * v2.normal;
+                //颜色在下一轮额外处理
+                output.emplace_back(currentVertex);
             }
-            output.emplace_back(currentVertex);
         }
+    }
+}
+
+void Rasterizer::RasterizeTriangle2(std::vector<VertexData> &output)
+{
+    for(auto &vertex : output) {
+        int x = vertex.position.x;
+        int y = vertex.position.y;
+        vertex.color = ((Render::GetColorFromMsaa(x, y, 0) + Render::GetColorFromMsaa(x, y, 1) + Render::GetColorFromMsaa(x, y, 2) + Render::GetColorFromMsaa(x, y, 3)) / 4);
     }
 }
 
@@ -296,6 +301,7 @@ std::vector<VertexData> Rasterizer::Rasterize(DrawMode drawMode, const std::vect
         for (size_t i = 0; i < input.size(); i += 3) {
             RasterizeTriangle(output, input[i], input[i + 1], input[i + 2], texture);
         }
+        RasterizeTriangle2(output);
         break;
     default:
         break;
